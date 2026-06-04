@@ -6,6 +6,9 @@ const path = require('path');
 autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
+// Required for private GitHub repo
+autoUpdater.requestHeaders = { 'Authorization': 'token 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' };
+
 let mainWindow;
 
 function createWindow() {

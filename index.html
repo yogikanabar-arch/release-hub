@@ -936,7 +936,7 @@ const RELEASE_STATUSES=[
   {id:'active',label:'Active',color:'#6366f1'},
   {id:'planned',label:'Planned',color:'#64748b'},
   {id:'at-risk',label:'At Risk',color:'#f59e0b'},
-  {id:'released',label:'Released',color:'#22c55e'},
+  {id:'released',label:'Deployed',color:'#22c55e'},
 ];
 const SCOPE_STATUSES=[
   {id:'aligned',label:'Aligned',color:'#22c55e'},
@@ -1317,7 +1317,7 @@ function updateTopbar(){
   const dEl=document.getElementById('days-lbl');
   if(dEl&&rel&&rel.releaseDate){
     const diff=Math.round((new Date(rel.releaseDate)-new Date())/86400000);
-    dEl.textContent=diff>0?diff+'d to release':diff===0?'Release Today!':'Released';
+    dEl.textContent=diff>0?diff+'d to release':diff===0?'Release Today!':'Deployed';
     dEl.style.color=diff<7?'#ef4444':diff<21?'#f59e0b':'#64748b';
   }
 
@@ -1479,6 +1479,31 @@ function renderRoadmap(){
       +'</div>');
   };
 
+  // ── 🚀 Deploy Window — week-wide bar on swimlane ──
+  const addDeployWindow=(lane,dateStr,col,r)=>{
+    if(!dateStr)return;
+    const d=new Date(dateStr);
+    const dow=d.getDay();
+    const weekStart=new Date(d);weekStart.setDate(d.getDate()-(dow===0?6:dow-1));
+    const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);
+    if(weekEnd<effectiveStart||weekStart>effectiveEnd)return;
+    const startPct=Math.max(0,(weekStart-effectiveStart)/effectiveMs*100);
+    const endPct=Math.min(100,(weekEnd-effectiveStart)/effectiveMs*100);
+    const midPct=(startPct+endPct)/2;
+    const line1=r.codeName||r.name;
+    const line2=r.codeName?r.name:'';
+    const photoHtml=r.photoUrl?'<img src="'+esc(r.photoUrl)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 2px" onerror="this.style.display=\'none\'">':'';
+    const mmdd=(weekStart.getMonth()+1)+'/'+String(weekStart.getDate()).padStart(2,'0');
+    lane.push('<div style="position:absolute;left:'+startPct+'%;width:'+(endPct-startPct)+'%;top:50%;transform:translateY(-50%);height:26px;background:'+col+'22;border:1.5px solid '+col+'88;border-radius:5px;pointer-events:none;z-index:0"></div>');
+    lane.push('<div class="sl-marker" style="left:'+midPct+'%;color:'+col+';z-index:1" onclick="setActiveRelease(\''+r.id+'\')" title="'+esc(r.name)+(r.codeName?' · '+esc(r.codeName):'')+' — Wk of '+mmdd+'">'
+      +photoHtml+'<span style="font-size:16px;display:block;text-align:center;line-height:1">🚀</span>'
+      +'<div class="sl-tick" style="background:'+col+'"></div>'
+      +'<div class="sl-name" style="color:'+col+';font-weight:700">'+esc(line1)+'</div>'
+      +(line2?'<div class="sl-name" style="color:'+col+';opacity:.75;font-weight:400;font-size:11px;margin-top:1px">'+esc(line2)+'</div>':'')
+      +'<div class="sl-name" style="color:'+col+';opacity:.7;font-weight:600;font-size:11px">Wk '+mmdd+'</div>'
+      +'</div>');
+  };
+
   // ── 👥 Customer Milestone swimlane — intake tab data with partner photo ──
   (state.customerMilestones||[]).forEach(cm=>{
     if(!cm.date)return;
@@ -1509,7 +1534,7 @@ function renderRoadmap(){
 
   // ── 🚀 Deploy Ready + ✂️ Cut Date — per release with photo + code name ──
   state.releases.forEach(r=>{
-    addRelMarker(sw1,r.deploymentDate,'🚀',r.color,r);
+    addDeployWindow(sw1,r.deploymentDate,r.color,r);
     addRelMarker(sw2,r.releaseDate,'✂️',r.color,r);
   });
 
@@ -1653,7 +1678,8 @@ function releaseCardHTML(r){
     +'<span class="status-pill" style="background:'+st.color+'20;color:'+st.color+'">'+st.label+'</span>'
     +(isActive?'<span style="margin-left:auto;font-size:9px;color:var(--accent);font-weight:700">ACTIVE</span>':'')
     +'</div>'
-    +(r.releaseDate||r.deploymentDate?'<div class="rel-card-date">'+(r.releaseDate?'✂️ Target Cut: <strong>'+fmtDate(r.releaseDate)+'</strong>':'')+(r.deploymentDate?' &nbsp;🚀 Target Deploy: <strong>'+fmtDate(r.deploymentDate)+'</strong>':'')+'</div>':'')
+    +(r.description?'<div style="font-size:11px;color:var(--muted);margin-bottom:5px;line-height:1.4">'+esc(r.description)+'</div>':'')
+    +(r.releaseDate||r.deploymentDate?'<div class="rel-card-date">'+(r.releaseDate?'✂️ Target Cut: <strong>'+fmtDate(r.releaseDate)+'</strong>':'')+(r.deploymentDate?' &nbsp;🚀 Deploy Window: <strong>Wk of '+fmtDate(r.deploymentDate)+'</strong>':'')+'</div>':'')
     +'<div class="rel-progress-bar"><div class="rel-progress-fill" style="width:'+pct+'%;background:'+r.color+'"></div></div>'
     +((r.adkVersions&&r.adkVersions.length)?'<div style="margin-bottom:4px;display:flex;flex-wrap:wrap;gap:3px">'+r.adkVersions.map(v=>{const a=(state.adkVersions||[]).find(x=>x.version===v);return'<span title="'+esc(a?.description||'')+'" style="background:rgba(6,182,212,.12);color:#06b6d4;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">🤖 '+esc(v)+'</span>';}).join('')+'</div>':'')
     +((r.vehiclePlatforms&&r.vehiclePlatforms.length)?'<div style="margin-bottom:4px;display:flex;flex-wrap:wrap;gap:3px">'+r.vehiclePlatforms.map(v=>{const vp=(state.vehiclePlatforms||[]).find(x=>x.name===v);return'<span title="'+esc(vp?.description||'')+'" style="background:rgba(245,158,11,.1);color:#f59e0b;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">🚗 '+esc(v)+'</span>';}).join('')+'</div>':'')
@@ -1690,9 +1716,9 @@ function editReleaseModal(id){
     +'<div class="field"><label>Status</label><select id="r-status">'+stOpts+'</select></div>'
     +'<div class="field"><label>Release Type</label><select id="r-type"><option value="minor"'+(r&&r.releaseType==='minor'?' selected':'')+'>Minor</option><option value="major"'+(r&&r.releaseType==='major'?' selected':'')+'>Major</option><option value="hotfix"'+(r&&r.releaseType==='hotfix'?' selected':'')+'>Hotfix</option></select></div>'
     +'<div class="field"><label>✂️ Target Cut Date</label><input type="date" id="r-date" value="'+((r&&r.releaseDate)||'')+'"></div>'
-    +'<div class="field"><label>🚀 Target Deployment Date</label><input type="date" id="r-deploy" value="'+((r&&r.deploymentDate)||'')+'"></div>'
+    +'<div class="field"><label>🚀 Target Deployment Window</label><input type="date" id="r-deploy" value="'+((r&&r.deploymentDate)||'')+'"></div>'
     +'<div class="field"><label>Color</label><input type="color" id="r-color" value="'+((r&&r.color)||'#6366f1')+'"></div>'
-    +'<input type="hidden" id="r-desc" value="'+esc(r?r.description||'':'')+'">'
+    +'<div class="full field"><label>Code Description</label><textarea id="r-desc" placeholder="Brief description of what this release includes…" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:13px;resize:vertical;min-height:56px;outline:none;font-family:inherit">'+esc(r?r.description||'':'')+'</textarea></div>'
     +'<input type="hidden" id="r-actual-cut" value="'+((r&&r.actualCutDate)||'')+'">'
     +'<input type="hidden" id="r-actual-deploy" value="'+((r&&r.actualDeployDate)||'')+'">'
     +'<div class="full field"><label>🤖 Compatible ADK Version(s)</label>'
