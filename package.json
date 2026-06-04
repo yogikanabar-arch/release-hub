@@ -1,0 +1,51 @@
+{
+  "name": "release-hub",
+  "version": "1.0.2",
+  "description": "May Mobility Release Hub — TPM release management dashboard",
+  "main": "main.js",
+  "author": "May Mobility TPM Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win"
+  },
+  "build": {
+    "appId": "com.maymobility.releasehub",
+    "productName": "Release Hub",
+    "copyright": "May Mobility",
+    "files": [
+      "index.html",
+      "main.js",
+      "assets/**"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "yogikanabar-arch",
+      "repo": "release-hub"
+    },
+    "dmg": {
+      "title": "Release Hub"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}
