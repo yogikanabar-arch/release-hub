@@ -1,6 +1,6 @@
 {
   "name": "release-hub",
-  "version": "1.0.2",
+  "version": "1.5.0",
   "description": "May Mobility Release Hub — TPM release management dashboard",
   "main": "main.js",
   "author": "May Mobility TPM Team",
@@ -23,7 +23,7 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
+      "target": [{ "target": "dmg", "arch": ["arm64"] }]
     },
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }]

@@ -119,7 +119,7 @@ input[type=number]{-moz-appearance:textfield!important;appearance:textfield!impo
 .rel-card-actions{display:flex;gap:5px;flex-wrap:wrap}
 /* ── SCHEDULE ── */
 #schedule-panel{flex-direction:row;overflow:hidden}
-#sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-width:180px;max-width:90vw}
+#sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-width:180px;max-width:640px}
 #sidebar-header{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap}
 #task-table-wrap{flex:1;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #task-table{width:max-content;min-width:100%;border-collapse:collapse;table-layout:fixed}
@@ -261,12 +261,7 @@ svg#gantt{display:block}
 .form-grid .full{grid-column:1/-1}
 /* DEP PICKER */
 .dep-picker-grid{display:flex;flex-wrap:wrap;gap:6px;max-height:260px;overflow-y:auto;padding:4px}
-.dep-chip-pick{padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;font-size:11px;font-family:monospace;transition:all .15s;background:var(--surface2);user-select:none}
-.task-row.drag-over{border-top:2px solid var(--accent)!important;background:rgba(99,102,241,.07)!important}
-.task-row.drag-into{border:2px dashed #8b5cf6!important;background:rgba(139,92,246,.1)!important}
-.row-drag-handle span:first-child{opacity:0;transition:opacity .15s}
-.task-row:hover .row-drag-handle span:first-child{opacity:1}
-.dep-chip-pick *{pointer-events:none}
+.dep-chip-pick{padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;font-size:11px;font-family:monospace;transition:all .15s;background:var(--surface2)}
 .dep-chip-pick:hover{border-color:var(--accent)}
 .dep-chip-pick.selected{background:rgba(99,102,241,.2);border-color:var(--accent);color:var(--accent)}
 /* SEV/PRI CARDS */
@@ -354,7 +349,6 @@ select option{background:var(--surface)}
       <div style="display:flex;gap:2px;margin-left:12px">
         <div class="view-btn active" id="rm-view-months" onclick="setRoadmapView('months')">Months</div>
         <div class="view-btn" id="rm-view-quarters" onclick="setRoadmapView('quarters')">Quarters</div>
-        <div class="view-btn" id="rm-view-weeks" onclick="setRoadmapView('weeks')">Weeks</div>
       </div>
       <!-- Zoom controls — only visible in Months view -->
       <div id="rm-zoom-controls" style="display:flex;gap:3px;margin-left:8px">
@@ -373,7 +367,6 @@ select option{background:var(--surface)}
       <div id="roadmap-active-section" class="roadmap-section"></div>
       <div id="roadmap-planned-section" class="roadmap-section"></div>
       <div id="roadmap-completed-section" class="roadmap-section"></div>
-      <div id="roadmap-deployed-section" class="roadmap-section"></div>
     </div>
   </div>
 
@@ -400,11 +393,6 @@ select option{background:var(--surface)}
           </div>
         </div>
         <button class="btn sm" onclick="confirmApplyTemplate()" title="Load default schedule template — replaces existing tasks">📋 Load Template</button>
-        <button class="btn sm" onclick="saveCurrentAsTemplate()" title="Save current schedule as the default template">💾 Save as Template</button>
-        <button class="btn sm" onclick="exportTemplateFile()" title="Download template as JSON file">⬇ Export Template</button>
-        <button class="btn sm" onclick="document.getElementById('import-tmpl-input').click()" title="Upload a JSON template file">⬆ Import Template</button>
-        <input type="file" id="import-tmpl-input" accept=".json" style="display:none" onchange="importTemplateFile(this)">
-        <button class="btn sm" style="color:#ef4444;border-color:#ef4444" onclick="confirmClearSchedule()" title="Delete all tasks for this release">🗑 Clear Schedule</button>
         <button class="btn sm" onclick="showChecklistModal()" title="Release checklist">✅ Release Checklist</button>
         <button class="btn sm primary" onclick="addTask()">+ Task</button>
       </div>
@@ -447,9 +435,6 @@ select option{background:var(--surface)}
         <label style="font-size:11px;color:var(--muted)"><input type="checkbox" id="show-today" checked onchange="renderGantt()"> Today</label>
         <label style="font-size:11px;color:var(--critical);font-weight:600"><input type="checkbox" id="show-cp" onchange="renderGantt();renderTable()"> Critical Path</label>
         <label style="font-size:11px;color:var(--muted)"><input type="checkbox" id="show-owners" onchange="renderGantt()"> 👤 Owners</label>
-        <div style="width:1px;height:16px;background:var(--border);margin:0 2px"></div>
-        <label style="font-size:11px;color:#06b6d4;font-weight:600" title="Skip weekends and holidays in duration calculations"><input type="checkbox" id="toggle-workdays" onchange="state.workingDaysOnly=this.checked;save();renderTable();renderGantt()"> 🗓 Work Days</label>
-        <label style="font-size:11px;color:#22c55e;font-weight:600" title="Auto-push dependent tasks when dates change"><input type="checkbox" id="toggle-autoschedule" onchange="state.autoSchedule=this.checked;if(this.checked){save();renderTable();renderGantt();}"> ⚡ Auto-Schedule</label>
         <div class="spacer"></div>
         <button class="btn sm" onclick="downloadGanttPNG()" title="Save as PNG">📷 PNG</button>
       </div>
@@ -468,13 +453,13 @@ select option{background:var(--surface)}
         <div class="field"><label>Team</label><select id="d-team" onchange="udField('team',this.value)"></select></div>
         <div class="field"><label>Owner</label><select id="d-owner" onchange="udField('owner',this.value)"><option value="">Unassigned</option></select></div>
         <div class="field"><label>Start Date</label><input type="date" id="d-start" oninput="udDateField('start',this.value)"></div>
-        <div class="field"><label>End Date <span style="font-size:10px;color:var(--muted)">(calculated)</span></label><input type="date" id="d-end" readonly style="opacity:.6;cursor:default"></div>
-        <div class="field"><label>Duration</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="d-dur" min="0" style="width:60px" oninput="udDuration(+this.value)"><select id="d-dur-unit" onchange="udDurUnit(this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 6px;border-radius:5px;font-size:12px"><option value="d">Days</option><option value="w">Weeks</option></select></div></div>
+        <div class="field"><label>End Date</label><input type="date" id="d-end" oninput="udDateField('end',this.value)"></div>
+        <div class="field"><label>Duration (days)</label><input type="number" id="d-dur" min="1" oninput="udDuration(+this.value)"></div>
         <div class="field"><label>Progress: <span id="d-pval">0%</span></label><input type="range" min="0" max="100" id="d-prog" oninput="udField('progress',+this.value);document.getElementById('d-pval').textContent=this.value+'%'"></div>
         <div class="field">
           <label>Dependencies</label>
           <div id="d-deps-chips" class="dep-chips"></div>
-          <button class="add-dep-btn" onclick="showDepPicker(selectedTaskId)">+ Pick</button>
+          <button class="add-dep-btn" onclick="showDepPicker()">+ Pick</button>
         </div>
         <div class="field"><label>Notes</label><textarea id="d-notes" oninput="udField('notes',this.value)"></textarea></div>
         <div class="field" style="display:flex;gap:10px;align-items:center">
@@ -540,8 +525,8 @@ select option{background:var(--surface)}
   <div class="tab-panel" id="risk-panel" style="flex-direction:column">
     <div id="risk-toolbar" style="padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:center;flex-shrink:0;flex-wrap:wrap">
       <select class="fsel" id="f-rrel" onchange="renderRisk()"><option value="">All Releases</option></select>
-      <select class="fsel" id="f-rst" onchange="renderRisk()"><option value="">All Status</option><option value="open">Open</option><option value="mitigating">Mitigating</option><option value="accepted">Accepted</option><option value="monitoring">Monitoring</option><option value="closed">Closed</option><option value="escalated">Escalated</option></select>
-      <select class="fsel" id="f-rcat" onchange="renderRisk()"><option value="">All Levels</option><option value="R0">R0 — Critical</option><option value="R1">R1 — High</option><option value="R2">R2 — Medium</option><option value="R3">R3 — Low</option><option value="R4">R4 — Informational</option></select>
+      <select class="fsel" id="f-rst" onchange="renderRisk()"><option value="">All Status</option><option value="open">Open</option><option value="mitigating">Mitigating</option><option value="accepted">Accepted</option><option value="closed">Closed</option></select>
+      <select class="fsel" id="f-rcat" onchange="renderRisk()"><option value="">All Categories</option><option>Technical</option><option>Schedule</option><option>Resource</option><option>External</option><option>Compliance</option></select>
       <div class="spacer"></div>
       <button class="btn sm primary" onclick="editRiskModal(null)">+ Add Risk</button>
     </div>
@@ -551,14 +536,14 @@ select option{background:var(--surface)}
         <table style="width:100%;border-collapse:collapse" id="risk-table">
           <thead><tr style="background:var(--surface);position:sticky;top:0;z-index:5">
             <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">ID</th>
-            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Risk Statement</th>
+            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Risk</th>
+            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Category</th>
+            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Prob</th>
+            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Impact</th>
+            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Score</th>
             <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Level</th>
-            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Severity</th>
-            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Likelihood</th>
-            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Detectability</th>
             <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Owner</th>
             <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Status</th>
-            <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Decision</th>
             <th style="padding:7px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)">Release</th>
             <th style="padding:7px 12px;border-bottom:1px solid var(--border)"></th>
           </tr></thead>
@@ -729,7 +714,6 @@ select option{background:var(--surface)}
       <div class="tab" data-stab="phases" onclick="switchSettingsTab('phases')" style="font-size:11px;padding:8px 12px">🎨 Phases</div>
       <div class="tab" data-stab="reference" onclick="switchSettingsTab('reference')" style="font-size:11px;padding:8px 12px">📍 Reference Data</div>
       <div class="tab" data-stab="integrations" onclick="switchSettingsTab('integrations')" style="font-size:11px;padding:8px 12px">🔗 Integrations</div>
-      <div class="tab" data-stab="holidays" onclick="switchSettingsTab('holidays')" style="font-size:11px;padding:8px 12px">🏖️ Holidays</div>
       <div class="tab" data-stab="firebase" onclick="switchSettingsTab('firebase')" style="font-size:11px;padding:8px 12px">🔥 Firebase</div>
     </div>
     <!-- Settings sub-tab content -->
@@ -871,21 +855,6 @@ select option{background:var(--surface)}
       </div>
 
       <!-- INTEGRATIONS -->
-      <div class="stab-panel" id="stab-holidays">
-        <div style="max-width:680px;margin:0 auto;padding:20px 16px">
-          <div class="sset">
-            <h3>🏖️ Holidays</h3>
-            <p>Add holidays to exclude them from schedule duration calculations. Tasks will not count these days when computing timelines.</p>
-            <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-              <input type="date" id="holiday-date-input" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:13px;outline:none">
-              <input id="holiday-name-input" placeholder="Holiday name (e.g. July 4th)" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:13px;outline:none">
-              <button class="btn sm primary" onclick="addHoliday()">+ Add</button>
-            </div>
-            <div id="holiday-list" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-        </div>
-      </div>
-
       <div class="stab-panel" id="stab-integrations">
         <div style="max-width:680px;margin:0 auto;padding:20px 16px">
           <div class="sset">
@@ -965,10 +934,9 @@ const ISSUE_STATUSES=[
 ];
 const RELEASE_STATUSES=[
   {id:'active',label:'Active',color:'#6366f1'},
-  {id:'in-plan',label:'In Plan',color:'#8b5cf6'},
-  {id:'upcoming',label:'Upcoming',color:'#64748b'},
+  {id:'planned',label:'Planned',color:'#64748b'},
   {id:'at-risk',label:'At Risk',color:'#f59e0b'},
-  {id:'released',label:'Deployed',color:'#22c55e'},
+  {id:'released',label:'Released',color:'#22c55e'},
 ];
 const SCOPE_STATUSES=[
   {id:'aligned',label:'Aligned',color:'#22c55e'},
@@ -1104,52 +1072,7 @@ function loadSample(){
 const LS_KEY='maymob-dash-v1';
 let _fb=null,_fbRef=null,_fbWriting=false;
 
-// ── UNDO STACK ────────────────────────────────────────────────
-const _undoStack=[];const _undoMaxSize=30;
-function pushUndo(){
-  _undoStack.push(JSON.stringify({state,PHASES,TEAMS,SEVERITIES,PRIORITIES}));
-  if(_undoStack.length>_undoMaxSize)_undoStack.shift();
-}
-function undo(){
-  if(!_undoStack.length)return;
-  const snap=JSON.parse(_undoStack.pop());
-  if(snap.state)state=snap.state;
-  if(snap.PHASES)PHASES.length=0,snap.PHASES.forEach(p=>PHASES.push(p));
-  if(snap.TEAMS)TEAMS.length=0,snap.TEAMS.forEach(t=>TEAMS.push(t));
-  localStorage.setItem(LS_KEY,JSON.stringify(snap));
-  // Explicitly render schedule tab components if on that tab
-  if(currentTab==='schedule'){renderTable();renderGantt();setTimeout(applyColState,0);}
-  else renderAll();
-  // Show brief toast
-  const fb=document.createElement('div');
-  fb.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#6366f1;color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:999;pointer-events:none';
-  fb.textContent='↩ Undone';document.body.appendChild(fb);setTimeout(()=>fb.remove(),1500);
-}
-document.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}
-});
-
-// Roll up parent task dates from sub-task dates
-function rollupParentDates(){
-  const tasks=state.tasks||[];
-  // Find all unique parentIds
-  const parentIds=[...new Set(tasks.filter(t=>t.parentId).map(t=>t.parentId))];
-  parentIds.forEach(pid=>{
-    const parent=tasks.find(t=>t.id===pid);
-    if(!parent)return;
-    const children=tasks.filter(t=>t.parentId===pid&&t.start&&t.end);
-    if(!children.length)return;
-    const minStart=children.reduce((m,t)=>t.start<m?t.start:m,children[0].start);
-    const maxEnd=children.reduce((m,t)=>t.end>m?t.end:m,children[0].end);
-    parent.start=minStart;
-    parent.end=maxEnd;
-  });
-}
-
-function save(opts){
-  rollupParentDates();
-  if(opts&&opts.cascade)autoSchedule('asap'); // reschedule all deps when dates change
-  rollupProgress(); // always roll up parent % from sub-tasks
+function save(){
   localStorage.setItem(LS_KEY,JSON.stringify({state,PHASES,TEAMS,SEVERITIES,PRIORITIES}));
   if(_fbRef&&!_fbWriting){
     _fbWriting=true;
@@ -1292,25 +1215,8 @@ function toggleTheme(){
 // ══════════════════════════════════════════════
 function computeWBS(tasks){
   const pi={};PHASES.forEach((p,i)=>pi[p.id]=i+1);
-  const counts={};        // phase → top-level counter
-  const subCounts={};     // parentWBS → sub-task counter
-  const wbsMap={};        // taskId → wbs string
-
-  tasks.forEach(t=>{
-    const parentId=t.parentId;
-    if(parentId&&wbsMap[parentId]){
-      // sub-task: inherit parent WBS + sub-counter
-      const pw=wbsMap[parentId];
-      subCounts[pw]=(subCounts[pw]||0)+1;
-      t.wbs=pw+'.'+subCounts[pw];
-    } else {
-      // top-level task
-      const n=pi[t.phase]||99;
-      counts[n]=(counts[n]||0)+1;
-      t.wbs=n+'.'+counts[n];
-    }
-    wbsMap[t.id]=t.wbs;
-  });
+  const counts={};
+  tasks.forEach(t=>{const n=pi[t.phase]||99;counts[n]=(counts[n]||0)+1;t.wbs=n+'.'+counts[n];});
   return tasks;
 }
 function wbsOf(id,tasks){const t=tasks.find(x=>x.id===id);return t?t.wbs:id}
@@ -1349,148 +1255,8 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 function activeTasks(){return (state.tasks||[]).filter(t=>t.releaseId===state.activeReleaseId)}
 function activeRelease(){return state.releases.find(r=>r.id===state.activeReleaseId)||state.releases[0]}
 function addDays(dateStr,n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
-// ── Working Days helpers ──────────────────────────────────────
-function getHolidays(){return state.holidays||[];}
-function isHoliday(dateStr){return getHolidays().some(h=>h.date===dateStr.slice(0,10));}
-function isWorkDay(dateStr){
-  const p=String(dateStr).slice(0,10).split('-');
-  const d=new Date(+p[0],+p[1]-1,+p[2]);
-  const dow=d.getDay();
-  if(dow===0||dow===6)return false; // weekend
-  if(isHoliday(dateStr))return false;
-  return true;
-}
-function useWorkDays(){return !!(state.workingDaysOnly);}
-function addWorkDays(dateStr,n){
-  // Skip weekends + holidays
-  let d=new Date(dateStr);let added=0;
-  const sign=n<0?-1:1;const abs=Math.abs(n);
-  while(added<abs){d.setDate(d.getDate()+sign);const ds=d.toISOString().slice(0,10);if(isWorkDay(ds))added++;}
-  return d.toISOString().slice(0,10);
-}
-function addWeekDays(dateStr,n){
-  // Always skip Sat/Sun (+ holidays if Work Days mode on)
-  let d=new Date(dateStr);let added=0;
-  const sign=n<0?-1:1;const abs=Math.abs(n);
-  while(added<abs){
-    d.setDate(d.getDate()+sign);
-    const ds=d.toISOString().slice(0,10);
-    const dow=d.getDay();
-    if(dow!==0&&dow!==6&&(!useWorkDays()||!isHoliday(ds)))added++;
-  }
-  return d.toISOString().slice(0,10);
-}
-function smartAddDays(dateStr,n){
-  // Always skip weekends; also skip holidays if Work Days mode is on
-  if(n===0)return dateStr;
-  return addWeekDays(dateStr,n);
-}
-function workDaysBetween(start,end){
-  // Count working days from start to end inclusive
-  let count=0;
-  const p1=String(start).slice(0,10).split('-');const p2=String(end).slice(0,10).split('-');
-  let d=new Date(+p1[0],+p1[1]-1,+p1[2]);
-  const endD=new Date(+p2[0],+p2[1]-1,+p2[2]);
-  while(d<=endD){const ds=d.toISOString().slice(0,10);if(isWorkDay(ds))count++;d.setDate(d.getDate()+1);}
-  return Math.max(1,count);
-}
-function smartDaysBetween(start,end){
-  // Inclusive count: same day = 1, Mon to Fri = 5
-  // Always skip weekends; also skip holidays if Work Days mode on
-  if(start===end)return 1; // same day = 1 day
-  let count=0;
-  const p1=String(start).slice(0,10).split('-');const p2=String(end).slice(0,10).split('-');
-  let d=new Date(+p1[0],+p1[1]-1,+p1[2]); // inclusive of start
-  const endD=new Date(+p2[0],+p2[1]-1,+p2[2]);
-  while(d<=endD){
-    const dow=d.getDay();const ds=d.toISOString().slice(0,10);
-    if(dow!==0&&dow!==6&&(!useWorkDays()||!isHoliday(ds)))count++;
-    d.setDate(d.getDate()+1);
-  }
-  return Math.max(1,count);
-}
-
-// ── Auto-schedule: cascade dependent tasks ────────────────────
-// mode='asap'  → always move task to start right after its latest dep ends
-// mode='push'  → only push tasks later if they start before a dep ends (default on date edit)
-function autoSchedule(mode){
-  const tasks=activeTasks();
-  if(!tasks.length)return;
-  const taskMap={};tasks.forEach(t=>taskMap[t.id]=t);
-  const sortedIds=topoSort(tasks);
-  sortedIds.forEach(id=>{
-    const t=taskMap[id];if(!t||!Array.isArray(t.deps)||!t.deps.length)return;
-    let latestDepEnd=null;
-    t.deps.forEach(depId=>{
-      // skip parent dep — parent dates are computed from children
-      if(t.parentId&&t.parentId===depId)return;
-      const dep=taskMap[depId];if(!dep)return;
-      if(!latestDepEnd||dep.end>latestDepEnd)latestDepEnd=dep.end;
-    });
-    if(!latestDepEnd)return;
-    const minStart=smartAddDays(latestDepEnd,1);
-    const dur=smartDaysBetween(t.start,t.end);
-    const snapToWeekday=(ds)=>{
-      const p=ds.split('-');let d=new Date(+p[0],+p[1]-1,+p[2]);
-      while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
-      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    };
-    if(mode==='asap'){
-      t.start=minStart;
-      t.end=t.milestone?t.start:(dur>1?smartAddDays(t.start,dur-1):t.start);
-    } else {
-      if(t.start<minStart){
-        t.start=minStart;
-        t.end=t.milestone?t.start:(dur>1?smartAddDays(t.start,dur-1):t.start);
-      }
-    }
-    // Always ensure milestones land on weekdays
-    if(t.milestone){t.start=snapToWeekday(t.start);t.end=t.start;}
-  });
-  tasks.forEach(t=>{const s=state.tasks.find(x=>x.id===t.id);if(s){s.start=t.start;s.end=t.end;}});
-}
-
-// ── % complete rollup: parent = weighted avg of children ──────
-function rollupProgress(){
-  const tasks=state.tasks||[];
-  const parentIds=[...new Set(tasks.filter(t=>t.parentId).map(t=>t.parentId))];
-  parentIds.forEach(pid=>{
-    const parent=tasks.find(t=>t.id===pid);if(!parent)return;
-    const children=tasks.filter(t=>t.parentId===pid&&t.start&&t.end);
-    if(!children.length)return;
-    const totalDur=children.reduce((s,t)=>s+smartDaysBetween(t.start,t.end),0);
-    if(!totalDur)return;
-    const weighted=children.reduce((s,t)=>s+t.progress*smartDaysBetween(t.start,t.end),0);
-    parent.progress=Math.round(weighted/totalDur);
-  });
-}
-function addHoliday(){
-  const date=document.getElementById('holiday-date-input')?.value;
-  const name=(document.getElementById('holiday-name-input')?.value||'').trim();
-  if(!date)return;
-  if(!state.holidays)state.holidays=[];
-  if(!state.holidays.find(h=>h.date===date)){
-    state.holidays.push({date,name:name||date});
-    save();renderHolidays();
-  }
-}
-function removeHoliday(date){
-  state.holidays=(state.holidays||[]).filter(h=>h.date!==date);
-  save();renderHolidays();
-}
-function renderHolidays(){
-  const el=document.getElementById('holiday-list');if(!el)return;
-  const holidays=getHolidays().slice().sort((a,b)=>a.date.localeCompare(b.date));
-  el.innerHTML=holidays.length
-    ?holidays.map(h=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--surface2);border-radius:6px">'
-        +'<span style="font-size:13px;color:var(--muted);min-width:90px">'+fmtDate(h.date)+'</span>'
-        +'<span style="flex:1;font-size:13px">'+esc(h.name)+'</span>'
-        +'<button class="btn sm" style="color:#ef4444" onclick="removeHoliday(\''+h.date+'\')">✕</button>'
-        +'</div>').join('')
-    :'<div style="color:var(--muted);font-size:13px">No holidays added yet.</div>';
-}
 function daysBetween(a,b){return Math.max(1,Math.round((new Date(b)-new Date(a))/86400000))}
-function fmtDate(d){if(!d)return'';const p=String(d).slice(0,10).split('-');if(p.length<3)return d;return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('en',{month:'short',day:'numeric'})}
+function fmtDate(d){if(!d)return'';const dt=new Date(d);return dt.toLocaleDateString('en',{month:'short',day:'numeric'})}
 function memberName(id){const m=state.teamMembers.find(m=>m.id===id);return m?m.name:''}
 function memberById(id){return state.teamMembers.find(m=>m.id===id)}
 
@@ -1519,14 +1285,7 @@ function switchTab(tab){
   currentTab=tab;
   updateTopbar();
   if(tab==='roadmap')renderRoadmap();
-  else if(tab==='schedule'){
-    renderTable();renderGantt();
-    setTimeout(()=>{
-      applyColState();restoreColWidths();initColDrag();
-      const wd=document.getElementById('toggle-workdays');if(wd)wd.checked=!!state.workingDaysOnly;
-      const as=document.getElementById('toggle-autoschedule');if(as)as.checked=!!state.autoSchedule;
-    },0);
-  }
+  else if(tab==='schedule'){renderTable();renderGantt();setTimeout(()=>{applyColState();restoreColWidths();initColDrag();},0);}
   else if(tab==='issues')renderIssues();
   else if(tab==='scope')renderScope();
   else if(tab==='risk')renderRisk();
@@ -1558,7 +1317,7 @@ function updateTopbar(){
   const dEl=document.getElementById('days-lbl');
   if(dEl&&rel&&rel.releaseDate){
     const diff=Math.round((new Date(rel.releaseDate)-new Date())/86400000);
-    dEl.textContent=diff>0?diff+'d to release':diff===0?'Release Today!':'Deployed';
+    dEl.textContent=diff>0?diff+'d to release':diff===0?'Release Today!':'Released';
     dEl.style.color=diff<7?'#ef4444':diff<21?'#f59e0b':'#64748b';
   }
 
@@ -1646,7 +1405,7 @@ let roadmapMonthW=80; // px per month column (adjustable via zoom)
 
 function setRoadmapView(v){
   roadmapView=v;
-  ['months','quarters','weeks'].forEach(k=>{
+  ['months','quarters'].forEach(k=>{
     document.getElementById('rm-view-'+k)?.classList.toggle('active',k===v);
   });
   // Show zoom controls only in months view
@@ -1697,7 +1456,7 @@ function renderRoadmap(){
 
   const addRelMarker=(lane,dateStr,icon,col,r)=>{
     if(!dateStr)return;
-    const _rp=String(dateStr).slice(0,10).split('-');const d=new Date(+_rp[0],+_rp[1]-1,+_rp[2]);
+    const d=new Date(dateStr);
     if(d<effectiveStart||d>effectiveEnd)return;
     const pct=Math.max(.3,Math.min(99.7,(d-effectiveStart)/effectiveMs*100));
     // Primary: code name; secondary: version name
@@ -1709,8 +1468,7 @@ function renderRoadmap(){
       ?'<img src="'+esc(r.photoUrl)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 2px" onerror="this.style.display=\'none\'">'
       :'';
     const iconHtml='<span style="font-size:16px;display:block;text-align:center;line-height:1">'+icon+'</span>';
-    const _dp=String(dateStr).slice(0,10).split('-');
-    const dt=new Date(+_dp[0],+_dp[1]-1,+_dp[2]);
+    const dt=new Date(dateStr);
     const mmdd=(dt.getMonth()+1)+'/'+String(dt.getDate()).padStart(2,'0');
     lane.push('<div class="sl-marker" style="left:'+pct+'%;color:'+col+'" onclick="setActiveRelease(\''+r.id+'\')" title="'+esc(r.name)+(r.codeName?' · '+esc(r.codeName):'')+' — '+fmtDate(dateStr)+'">'
       +photoHtml+iconHtml
@@ -1721,35 +1479,10 @@ function renderRoadmap(){
       +'</div>');
   };
 
-  // ── 🚀 Deploy Window — date-range bar on swimlane ──
-  const addDeployWindow=(lane,startStr,endStr,col,r)=>{
-    if(!startStr)return;
-    const _sp=String(startStr).slice(0,10).split('-');const dStart=new Date(+_sp[0],+_sp[1]-1,+_sp[2]);
-    const dEnd=endStr?(()=>{const _ep=String(endStr).slice(0,10).split('-');return new Date(+_ep[0],+_ep[1]-1,+_ep[2]);})():new Date(dStart.getTime()+6*86400000);
-    if(dEnd<effectiveStart||dStart>effectiveEnd)return;
-    const startPct=Math.max(0,(dStart-effectiveStart)/effectiveMs*100);
-    const endPct=Math.min(100,(dEnd-effectiveStart)/effectiveMs*100);
-    const midPct=(startPct+endPct)/2;
-    const line1=r.codeName||r.name;
-    const line2=r.codeName?r.name:'';
-    const photoHtml=r.photoUrl?'<img src="'+esc(r.photoUrl)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 2px" onerror="this.style.display=\'none\'">':'';
-    const mmdd=(dStart.getMonth()+1)+'/'+String(dStart.getDate()).padStart(2,'0');
-    const mmdd2=(dEnd.getMonth()+1)+'/'+String(dEnd.getDate()).padStart(2,'0');
-    // Bar sits at the bottom of the track — below all label text, no overlap
-    lane.push('<div style="position:absolute;left:'+startPct+'%;width:'+(endPct-startPct)+'%;bottom:4px;height:6px;background:'+col+'44;border:1.5px solid '+col+'99;border-radius:3px;pointer-events:none;z-index:0"></div>');
-    lane.push('<div class="sl-marker" style="left:'+midPct+'%;color:'+col+';z-index:1" onclick="setActiveRelease(\''+r.id+'\')" title="'+esc(r.name)+(r.codeName?' · '+esc(r.codeName):'')+' — '+mmdd+' to '+mmdd2+'">'
-      +photoHtml+'<span style="font-size:16px;display:block;text-align:center;line-height:1">🚀</span>'
-      +'<div class="sl-tick" style="background:'+col+'"></div>'
-      +'<div class="sl-name" style="color:'+col+';font-weight:700">'+esc(line1)+'</div>'
-      +(line2?'<div class="sl-name" style="color:'+col+';opacity:.75;font-weight:400;font-size:11px;margin-top:1px">'+esc(line2)+'</div>':'')
-      +'<div class="sl-name" style="color:'+col+';opacity:.7;font-weight:600;font-size:11px">'+mmdd+'–'+mmdd2+'</div>'
-      +'</div>');
-  };
-
   // ── 👥 Customer Milestone swimlane — intake tab data with partner photo ──
   (state.customerMilestones||[]).forEach(cm=>{
     if(!cm.date)return;
-    const _cp=String(cm.date).slice(0,10).split('-');const d=new Date(+_cp[0],+_cp[1]-1,+_cp[2]);
+    const d=new Date(cm.date);
     if(d<effectiveStart||d>effectiveEnd)return;
     const pct=Math.max(.3,Math.min(99.7,(d-effectiveStart)/effectiveMs*100));
     const relForColor=state.releases.find(r=>r.id===cm.releaseId);
@@ -1776,7 +1509,7 @@ function renderRoadmap(){
 
   // ── 🚀 Deploy Ready + ✂️ Cut Date — per release with photo + code name ──
   state.releases.forEach(r=>{
-    addDeployWindow(sw1,r.deploymentDate,r.deployWindowEnd,r.color,r);
+    addRelMarker(sw1,r.deploymentDate,'🚀',r.color,r);
     addRelMarker(sw2,r.releaseDate,'✂️',r.color,r);
   });
 
@@ -1847,11 +1580,10 @@ function renderRoadmap(){
     +'</div>'
   ).join('');
 
-  // Today's fractional position within the year
+  // Today's position as a percentage within the effective range
   const todayD=new Date();
-  const todayFrac=todayD>=effectiveStart&&todayD<=effectiveEnd
-    ?Math.max(0.003,Math.min(0.997,(todayD-effectiveStart)/effectiveMs)):null;
-  const todayPct=todayFrac!==null?(todayFrac*100).toFixed(4)+'%':null;
+  const todayPct=todayD>=effectiveStart&&todayD<=effectiveEnd
+    ?Math.max(.3,Math.min(99.7,(todayD-effectiveStart)/effectiveMs*100)):null;
 
   document.getElementById('roadmap-timeline').innerHTML=
     // Scrollable wrapper
@@ -1860,15 +1592,14 @@ function renderRoadmap(){
     +'<div style="display:flex;position:sticky;top:0;z-index:6;background:var(--surface);border-bottom:1px solid var(--border)">'
     +'<div style="width:'+LABEL_W+'px;min-width:'+LABEL_W+'px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface)"></div>'
     +'<div style="flex:1;overflow:hidden;min-width:'+contentMinW+'px;position:relative">'+monthsRow+cwRow
-    // Today line in header — % of content div (after label), matches swimlane
-    +(todayPct!==null?'<div style="position:absolute;top:0;bottom:0;left:'+todayPct+';width:2px;background:#f59e0b;opacity:.8;pointer-events:none"></div>':'')
+    // Today line in header
+    +(todayPct!==null?'<div style="position:absolute;top:0;bottom:0;left:'+todayPct+'%;width:2px;background:#f59e0b;opacity:.8;pointer-events:none"></div>':'')
     +'</div>'
     +'</div>'
     // Swimlane rows (with today line overlay)
-    +'<div style="position:relative;min-width:calc('+LABEL_W+'px + '+contentMinW+'px)">'
+    +'<div style="position:relative">'
     +tracksHTML
-    // calc(LABEL_W + (100% - LABEL_W) * fraction) keeps alignment across all viewport widths
-    +(todayFrac!==null?'<div style="position:absolute;top:0;bottom:0;left:calc('+LABEL_W+'px + (100% - '+LABEL_W+'px) * '+todayFrac.toFixed(6)+');width:2px;background:#f59e0b;opacity:.5;pointer-events:none;z-index:3"></div>':'')
+    +(todayPct!==null?'<div style="position:absolute;top:0;bottom:0;left:calc('+LABEL_W+'px + (100% - '+LABEL_W+'px) * '+(todayPct/100)+');width:2px;background:#f59e0b;opacity:.5;pointer-events:none;z-index:3"></div>':'')
     +'</div>'
     +'</div>';
 
@@ -1885,17 +1616,15 @@ function renderRoadmap(){
   }
 
   // Sections
-  const groups={active:[],inplan:[],upcoming:[],released:[]};
+  const groups={active:[],planned:[],released:[]};
   state.releases.forEach(r=>{
-    if(r.status==='active'||r.status==='at-risk')groups.active.push(r);
+    if(r.status==='active')groups.active.push(r);
     else if(r.status==='released')groups.released.push(r);
-    else if(r.status==='upcoming')groups.upcoming.push(r);
-    else groups.inplan.push(r); // in-plan + planned (legacy)
+    else groups.planned.push(r);
   });
   renderRoadmapSection('roadmap-active-section','🟢 Active',groups.active);
-  renderRoadmapSection('roadmap-planned-section','📌 In Plan',groups.inplan);
-  renderRoadmapSection('roadmap-completed-section','🔵 Upcoming',groups.upcoming);
-  renderRoadmapSection('roadmap-deployed-section','✅ Deployed',groups.released);
+  renderRoadmapSection('roadmap-planned-section','📌 In Plan',groups.planned);
+  renderRoadmapSection('roadmap-completed-section','✅ Completed',groups.released);
 }
 
 function renderRoadmapSection(elId,title,releases){
@@ -1924,8 +1653,7 @@ function releaseCardHTML(r){
     +'<span class="status-pill" style="background:'+st.color+'20;color:'+st.color+'">'+st.label+'</span>'
     +(isActive?'<span style="margin-left:auto;font-size:9px;color:var(--accent);font-weight:700">ACTIVE</span>':'')
     +'</div>'
-    +(r.description?'<div style="font-size:11px;color:var(--muted);margin-bottom:5px;line-height:1.4">'+esc(r.description)+'</div>':'')
-    +(r.releaseDate||r.deploymentDate?'<div class="rel-card-date">'+(r.releaseDate?'✂️ Target Cut: <strong>'+fmtDate(r.releaseDate)+'</strong>':'')+(r.deploymentDate?' &nbsp;🚀 Deploy: <strong>'+fmtDate(r.deploymentDate)+(r.deployWindowEnd?' – '+fmtDate(r.deployWindowEnd):'')+'</strong>':'')+'</div>':'')
+    +(r.releaseDate||r.deploymentDate?'<div class="rel-card-date">'+(r.releaseDate?'✂️ Target Cut: <strong>'+fmtDate(r.releaseDate)+'</strong>':'')+(r.deploymentDate?' &nbsp;🚀 Target Deploy: <strong>'+fmtDate(r.deploymentDate)+'</strong>':'')+'</div>':'')
     +'<div class="rel-progress-bar"><div class="rel-progress-fill" style="width:'+pct+'%;background:'+r.color+'"></div></div>'
     +((r.adkVersions&&r.adkVersions.length)?'<div style="margin-bottom:4px;display:flex;flex-wrap:wrap;gap:3px">'+r.adkVersions.map(v=>{const a=(state.adkVersions||[]).find(x=>x.version===v);return'<span title="'+esc(a?.description||'')+'" style="background:rgba(6,182,212,.12);color:#06b6d4;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">🤖 '+esc(v)+'</span>';}).join('')+'</div>':'')
     +((r.vehiclePlatforms&&r.vehiclePlatforms.length)?'<div style="margin-bottom:4px;display:flex;flex-wrap:wrap;gap:3px">'+r.vehiclePlatforms.map(v=>{const vp=(state.vehiclePlatforms||[]).find(x=>x.name===v);return'<span title="'+esc(vp?.description||'')+'" style="background:rgba(245,158,11,.1);color:#f59e0b;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:500">🚗 '+esc(v)+'</span>';}).join('')+'</div>':'')
@@ -1962,10 +1690,9 @@ function editReleaseModal(id){
     +'<div class="field"><label>Status</label><select id="r-status">'+stOpts+'</select></div>'
     +'<div class="field"><label>Release Type</label><select id="r-type"><option value="minor"'+(r&&r.releaseType==='minor'?' selected':'')+'>Minor</option><option value="major"'+(r&&r.releaseType==='major'?' selected':'')+'>Major</option><option value="hotfix"'+(r&&r.releaseType==='hotfix'?' selected':'')+'>Hotfix</option></select></div>'
     +'<div class="field"><label>✂️ Target Cut Date</label><input type="date" id="r-date" value="'+((r&&r.releaseDate)||'')+'"></div>'
-    +'<div class="field"><label>🚀 Deploy Window Start</label><input type="date" id="r-deploy" value="'+((r&&r.deploymentDate)||'')+'"></div>'
-    +'<div class="field"><label>🚀 Deploy Window End</label><input type="date" id="r-deploy-end" value="'+((r&&r.deployWindowEnd)||'')+'"></div>'
+    +'<div class="field"><label>🚀 Target Deployment Date</label><input type="date" id="r-deploy" value="'+((r&&r.deploymentDate)||'')+'"></div>'
     +'<div class="field"><label>Color</label><input type="color" id="r-color" value="'+((r&&r.color)||'#6366f1')+'"></div>'
-    +'<div class="full field"><label>Code Description</label><textarea id="r-desc" placeholder="Brief description of what this release includes…" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:5px;font-size:13px;resize:vertical;min-height:56px;outline:none;font-family:inherit">'+esc(r?r.description||'':'')+'</textarea></div>'
+    +'<input type="hidden" id="r-desc" value="'+esc(r?r.description||'':'')+'">'
     +'<input type="hidden" id="r-actual-cut" value="'+((r&&r.actualCutDate)||'')+'">'
     +'<input type="hidden" id="r-actual-deploy" value="'+((r&&r.actualDeployDate)||'')+'">'
     +'<div class="full field"><label>🤖 Compatible ADK Version(s)</label>'
@@ -1986,15 +1713,12 @@ function editReleaseModal(id){
     +'<button type="button" class="btn sm" onclick="triggerPhotoUploadModal(\''+( r?r.id:'')+'\')">📷 Upload Image</button>'
     +'<span style="font-size:11px;color:var(--muted)">or</span>'
     +'<input id="r-photo" value="'+esc(photoVal)+'" placeholder="Paste image URL…" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:12px;outline:none" oninput="previewModalPhoto(this.value)">'
-    +(photoVal?'<button type="button" class="btn sm" style="color:var(--danger,#ef4444);border-color:var(--danger,#ef4444)" onclick="document.getElementById(\'r-photo\').value=\'\';document.getElementById(\'r-photo-preview\').style.display=\'none\'">🗑 Remove</button>':'')
     +'</div></div>'
     +'</div>',[
     {label:'Cancel',fn:closeModal},
     {label:r?'Save':'Add',primary:true,fn:()=>{
-      try{
       const name=document.getElementById('r-name').value.trim();if(!name)return;
       const deployDate=document.getElementById('r-deploy')?.value||'';
-      const deployWindowEnd=document.getElementById('r-deploy-end')?.value||'';
       const photoInput=document.getElementById('r-photo');
       const photoVal2=photoInput&&photoInput.value!=='(uploaded image)'?photoInput.value:(r?r.photoUrl:'');
       const actualCut=document.getElementById('r-actual-cut')?.value||'';
@@ -2004,11 +1728,9 @@ function editReleaseModal(id){
       const selSites=getMultiSelectValues('r-sites');
       const selPartners=getMultiSelectValues('r-partners');
       const rType=document.getElementById('r-type')?.value||'minor';
-      if(!state.nextReleaseSeq)state.nextReleaseSeq=state.releases.length+1;
-      if(r){r.name=name;r.releaseType=rType;r.codeName=document.getElementById('r-code').value;r.releaseDate=document.getElementById('r-date').value;r.deploymentDate=deployDate;r.deployWindowEnd=deployWindowEnd;r.actualCutDate=actualCut;r.actualDeployDate=actualDeploy;r.status=document.getElementById('r-status').value;r.color=document.getElementById('r-color').value;r.description=document.getElementById('r-desc').value;r.adkVersions=selADK;r.vehiclePlatforms=selVP;r.operatingSites=selSites;r.operatorPartners=selPartners;r.photoUrl=photoVal2!=='(uploaded image)'?photoVal2:(r.photoUrl||'');}
-      else{state.releases.push({id:'R'+(state.nextReleaseSeq++),name,releaseType:rType,codeName:document.getElementById('r-code').value,releaseDate:document.getElementById('r-date').value,deploymentDate:deployDate,deployWindowEnd,customerMilestoneDate:'',status:document.getElementById('r-status').value,color:document.getElementById('r-color').value,description:document.getElementById('r-desc').value,photoUrl:'',adkVersions:selADK,vehiclePlatforms:selVP,operatingSites:selSites,operatorPartners:selPartners,sites:[],checklist:[]});}
+      if(r){r.name=name;r.releaseType=rType;r.codeName=document.getElementById('r-code').value;r.releaseDate=document.getElementById('r-date').value;r.deploymentDate=deployDate;r.actualCutDate=actualCut;r.actualDeployDate=actualDeploy;r.status=document.getElementById('r-status').value;r.color=document.getElementById('r-color').value;r.description=document.getElementById('r-desc').value;r.adkVersions=selADK;r.vehiclePlatforms=selVP;r.operatingSites=selSites;r.operatorPartners=selPartners;if(photoVal2&&photoVal2!=='(uploaded image)')r.photoUrl=photoVal2;}
+      else{state.releases.push({id:'R'+(state.nextReleaseSeq++),name,releaseType:rType,codeName:document.getElementById('r-code').value,releaseDate:document.getElementById('r-date').value,deploymentDate:deployDate,customerMilestoneDate:customerDate,status:document.getElementById('r-status').value,color:document.getElementById('r-color').value,description:document.getElementById('r-desc').value,photoUrl:'',adkVersions:selADK,vehiclePlatforms:selVP,operatingSites:selSites,operatorPartners:selPartners,sites:[],checklist:[]});}
       save();closeModal();renderAll();
-      }catch(e){alert('Error saving release: '+e.message);}
     }}
   ]);
 }
@@ -2273,33 +1995,20 @@ function confirmApplyTemplate(){
 
 function applyTemplate(){
   const rel=activeRelease();if(!rel)return;
-  if(!state.nextTaskSeq||isNaN(state.nextTaskSeq))state.nextTaskSeq=Date.now()%100000;
-  state.tasks=state.tasks.filter(t=>t.releaseId!==rel.id);
+  if(state.tasks.filter(t=>t.releaseId===rel.id).length>0){
+    state.tasks=state.tasks.filter(t=>t.releaseId!==rel.id);
+  }
   const today=new Date().toISOString().slice(0,10);
   const newIds=[];
   const tmplToUse=getTemplate();
-  if(!tmplToUse||!tmplToUse.length){
-    showModal('No Template','<p style="color:var(--muted)">No template defined. Go to ⚙️ Settings → Schedule Template to set one up.</p>',[{label:'OK',fn:closeModal}]);
-    return;
-  }
-  let dayOffset=0;
-  tmplToUse.forEach((tmpl,idx)=>{
+  tmplToUse.forEach(tmpl=>{
     const id='t'+(state.nextTaskSeq++);
     newIds.push(id);
-    const depIds=(tmpl.deps||[]).map(i=>newIds[i]).filter(Boolean);
-    // Start after the latest dependency ends, or sequentially
-    if(depIds.length){
-      const depTasks=depIds.map(d=>state.tasks.find(t=>t.id===d)).filter(Boolean);
-      const latestEnd=depTasks.reduce((max,t)=>t.end>max?t.end:max,today);
-      const start=addDays(latestEnd,1);
-      const end=tmpl.dur>1?addDays(start,Math.max(0,tmpl.dur-1)):start;
-      state.tasks.push({id,releaseId:rel.id,phase:tmpl.phase||'dev',team:'',name:tmpl.name,owner:'',start,end,progress:0,deps:depIds,milestone:!!tmpl.milestone,notes:''});
-    } else {
-      const start=addDays(today,dayOffset);
-      const end=tmpl.dur>1?addDays(start,Math.max(0,tmpl.dur-1)):start;
-      state.tasks.push({id,releaseId:rel.id,phase:tmpl.phase||'dev',team:'',name:tmpl.name,owner:'',start,end,progress:0,deps:[],milestone:!!tmpl.milestone,notes:''});
-      dayOffset+=tmpl.dur||1;
-    }
+    const depIds=tmpl.deps.map(i=>newIds[i]).filter(Boolean);
+    const startOffset=tmpl.deps.length?Math.max(...tmpl.deps.map(i=>depIds[i]?7*i:0)):newIds.length*2;
+    const start=addDays(today,startOffset);
+    const end=addDays(start,tmpl.dur-1);
+    state.tasks.push({id,releaseId:rel.id,phase:tmpl.phase,team:'',name:tmpl.name,owner:'',start,end,progress:0,deps:depIds,milestone:!!tmpl.milestone,notes:''});
   });
   // Apply checklist template from Settings
   if(!rel.checklist||rel.checklist.length===0){
@@ -2307,20 +2016,15 @@ function applyTemplate(){
     rel.checklist=tmplItems.map((text,i)=>({id:'cl'+Date.now()+i,text,done:false,taskId:''}));
   }
   save();
-  renderTable();renderGantt();updateTopbar();
+  // Force full schedule tab re-init so table and gantt render correctly
+  switchTab('schedule');
   setTimeout(zoomFit,100);
 }
 
 // ══════════════════════════════════════════════
 //  SCHEDULE TABLE
 // ══════════════════════════════════════════════
-let selectedTaskId=null,showCritOnly=false,_rowDragId=null;
-const _collapsedTasks=new Set(); // set of parent task IDs whose sub-tasks are hidden
-function toggleCollapse(taskId){
-  if(_collapsedTasks.has(taskId))_collapsedTasks.delete(taskId);
-  else _collapsedTasks.add(taskId);
-  renderTable();renderGantt();
-}
+let selectedTaskId=null,showCritOnly=false;
 let critSet=new Set();
 
 function resetScheduleFilters(){
@@ -2392,15 +2096,10 @@ function renderTable(){
     // Header row
     const hr=document.createElement('tr');
     hr.className=groupBy==='team'?'swim-hdr':'phase-hdr';
-    const firstTaskInGroup=grp.tasks[0];
-    hr.innerHTML='<td colspan="10" style="color:'+grp.color+';display:flex;align-items:center;justify-content:space-between">'+esc(grp.label)
-      +'<button class="btn sm" onclick="event.stopPropagation();addTaskInPhase(\''+grp.tasks[0]?.phase+'\')" style="font-size:10px;padding:1px 6px;opacity:.7">+ Task</button>'
-      +'</td>';
+    hr.innerHTML='<td colspan="10" style="color:'+grp.color+'">'+esc(grp.label)+'</td>';
     tbody.appendChild(hr);
 
     grp.tasks.forEach(t=>{
-      // Skip sub-tasks whose parent is collapsed
-      if(t.parentId&&_collapsedTasks.has(t.parentId))return;
       if(showCritOnly&&!critSet.has(t.id))return;
       const isCrit=critSet.has(t.id);
       const overdue=t.end<today&&t.progress<100;
@@ -2409,10 +2108,8 @@ function renderTable(){
       const isMileDone=t.milestone&&t.progress===100;
       const showCPTable=document.getElementById('show-cp')?.checked||false;
       const wbsLabel=t.wbs+(t.milestone?(isMileDone?'✓':'◆'):'')+(isCrit&&showCPTable?'●':'');
-      const hasSubTasks=tasks.some(x=>x.parentId===t.id);
-      const isCollapsed=_collapsedTasks.has(t.id);
       const depDisplay=t.deps.map(d=>wbsOf(d,tasks)).join(',');
-      const dur=smartDaysBetween(t.start,t.end)-1;
+      const dur=daysBetween(t.start,t.end);
       const ownerDisp=t.owner||'—';
       const tr=document.createElement('tr');
       tr.className='task-row';
@@ -2420,73 +2117,23 @@ function renderTable(){
       tr.style.cssText='';
       // Build cells map keyed by column key
       const cellsMap={
-        wbs:'<td class="wbs-cell col-wbs" style="color:'+(isMileDone?'#22c55e':isCrit&&showCPTable?'#ef4444':'var(--muted)')+';white-space:nowrap">'
-          +(hasSubTasks?'<button onclick="event.stopPropagation();toggleCollapse(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:9px;padding:0 2px;line-height:1">'+(isCollapsed?'▶':'▼')+'</button>':'<span style="display:inline-block;width:14px"></span>')
-          +esc(wbsLabel)+'</td>',
-        name:'<td class="task-name-cell"><input class="cell-input" value="'+esc(t.name.replace(/^\s*→\s*/,''))+'" data-id="'+t.id+'" data-f="name" onclick="event.stopPropagation()" onchange="updateField(this)" onkeydown="handleTaskNameKey(event,\''+t.id+'\')" style="'+(t.parentId?'padding-left:18px;border-left:2px solid var(--accent);':'')+'">'+'</td>',
+        wbs:'<td class="wbs-cell col-wbs" style="color:'+(isMileDone?'#22c55e':isCrit&&showCPTable?'#ef4444':'var(--muted)')+'">'+esc(wbsLabel)+'</td>',
+        name:'<td class="task-name-cell"><input class="cell-input" value="'+esc(t.name)+'" data-id="'+t.id+'" data-f="name" onchange="updateField(this)"></td>',
         team:'<td class="col-team"><select class="cell-input muted" data-id="'+t.id+'" data-f="team" onchange="updateField(this)" onclick="event.stopPropagation()" style="padding:0 2px;cursor:pointer"><option value="">—</option>'+TEAMS.map(tm=>'<option value="'+esc(tm)+'"'+(tm===t.team?' selected':'')+'>'+esc(tm)+'</option>').join('')+'</select></td>',
         owner:'<td class="col-owner"><select class="cell-input muted" data-id="'+t.id+'" data-f="owner" onchange="updateField(this)" onclick="event.stopPropagation()" style="padding:0 2px;cursor:pointer"><option value="">—</option>'+state.teamMembers.map(m=>'<option value="'+esc(m.name)+'"'+(m.name===t.owner?' selected':'')+'>'+esc(m.name)+'</option>').join('')+'</select></td>',
-        start:'<td class="col-start"><input class="cell-input muted" type="date" value="'+t.start+'" data-id="'+t.id+'" data-f="start" onclick="event.stopPropagation()" onchange="updateField(this)"></td>',
-        end:'<td class="col-end"><span style="font-size:11px;color:var(--muted);padding:0 4px">'+fmtDate(t.end)+'</span></td>',
-        days:'<td class="col-days" style="white-space:nowrap"><input class="cell-input muted" type="number" value="'+(t.milestone?0:smartDaysBetween(t.start,t.end))+'" min="0" data-id="'+t.id+'" data-f="dur" onclick="event.stopPropagation()" onchange="updateDurField(this)" style="width:34px"><select data-id="'+t.id+'" onclick="event.stopPropagation()" onchange="updateDurUnit(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;border-radius:3px;padding:0 2px;cursor:pointer"><option value="d"'+((!t.durUnit||t.durUnit==='d')?' selected':'')+'>d</option><option value="w"'+(t.durUnit==='w'?' selected':'')+'>w</option></select></td>',
+        start:'<td class="col-start"><input class="cell-input muted" type="date" value="'+t.start+'" data-id="'+t.id+'" data-f="start" onchange="updateField(this)"></td>',
+        end:'<td class="col-end"><input class="cell-input muted" type="date" value="'+t.end+'" data-id="'+t.id+'" data-f="end" onchange="updateField(this)"></td>',
+        days:'<td class="col-days"><input class="cell-input muted" type="number" value="'+dur+'" min="1" data-id="'+t.id+'" data-f="dur" onchange="updateDurField(this)" style="width:38px"></td>',
         progress:'<td class="col-progress" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:1px"><button onclick="event.stopPropagation();nudgeProg(\''+t.id+'\',-5)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:16px;height:20px;border-radius:3px 0 0 3px;cursor:pointer;font-size:10px;line-height:1;padding:0">−</button><input type="number" min="0" max="100" value="'+t.progress+'" data-id="'+t.id+'" data-f="progress" onchange="updateProgField(this)" onclick="event.stopPropagation()" style="width:38px;background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);border-left:none;border-right:none;color:var(--text);font-size:11px;text-align:center;height:20px;padding:0;outline:none"><button onclick="event.stopPropagation();nudgeProg(\''+t.id+'\',5)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:16px;height:20px;border-radius:0 3px 3px 0;cursor:pointer;font-size:10px;line-height:1;padding:0">+</button></div></td>',
         deps:'<td class="col-deps"><div class="dep-chips" style="flex-wrap:nowrap;overflow:hidden">'+(depDisplay?depDisplay.split(',').map(w=>'<span class="dep-chip">'+esc(w)+'</span>').join(''):'')+'<button class="add-dep-btn" data-id="'+t.id+'" onclick="event.stopPropagation();showDepPicker(\''+t.id+'\')">+</button></div></td>',
       };
       const orderedCells=colOrderState.map(k=>cellsMap[k]||'').join('');
-      tr.draggable=true;
-      tr.dataset.taskId=t.id;
-      tr.innerHTML='<td style="padding:0 4px;cursor:grab;white-space:nowrap" class="row-drag-handle" title="Drag to reorder"><span style="color:var(--muted);font-size:11px;user-select:none;vertical-align:middle">⠿</span><span style="display:inline-block;width:3px;height:18px;border-radius:2px;background:'+ph.color+';vertical-align:middle;margin-left:3px"></span></td>'
+      tr.innerHTML='<td style="padding:0 2px"><span style="display:inline-block;width:3px;height:22px;border-radius:2px;background:'+ph.color+'"></span></td>'
         +orderedCells
         +'<td style="white-space:nowrap">'
-        +'<button class="del-btn" onclick="event.stopPropagation();addTask(\''+t.id+'\')" title="Add task after this one" style="color:var(--accent)">+</button>'
-        +'<button class="del-btn" onclick="event.stopPropagation();addSubTask(\''+t.id+'\')" title="Add sub-task" style="color:#8b5cf6;font-size:10px">⤷</button>'
-        +(t.parentId?'<button class="del-btn" onclick="event.stopPropagation();convertToTask(\''+t.id+'\')" title="Convert to top-level task" style="color:#f59e0b;font-size:10px">↑</button>':'')
         +'<button class="del-btn" onclick="event.stopPropagation();selectTask(\''+t.id+'\')" title="Open details" style="color:var(--accent);font-size:13px">›</button>'
         +'<button class="del-btn" onclick="event.stopPropagation();deleteTask(\''+t.id+'\')">×</button>'
         +'</td>';
-      // Row drag-to-reorder events
-      tr.addEventListener('dragstart',e=>{
-        e.dataTransfer.setData('text/plain',t.id);
-        e.dataTransfer.effectAllowed='move';
-        tr.style.opacity='0.4';
-        _rowDragId=t.id;
-      });
-      tr.addEventListener('dragend',()=>{tr.style.opacity='';_rowDragId=null;document.querySelectorAll('.task-row.drag-over').forEach(r=>r.classList.remove('drag-over'));});
-      tr.addEventListener('dragover',e=>{if(!_rowDragId||_rowDragId===t.id)return;e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.task-row.drag-over,.task-row.drag-into').forEach(r=>{r.classList.remove('drag-over');r.classList.remove('drag-into');});const rect=tr.getBoundingClientRect();const relY=(e.clientY-rect.top)/rect.height;if(relY>0.65&&!t.parentId)tr.classList.add('drag-into');else tr.classList.add('drag-over');});
-      tr.addEventListener('dragleave',()=>tr.classList.remove('drag-over'));
-      tr.addEventListener('drop',e=>{
-        e.preventDefault();tr.classList.remove('drag-over');
-        const fromId=e.dataTransfer.getData('text/plain');
-        if(!fromId||fromId===t.id)return;
-        const relTasks=state.tasks.filter(x=>x.releaseId===activeRelease()?.id);
-        const otherTasks=state.tasks.filter(x=>x.releaseId!==activeRelease()?.id);
-        const fromIdx=relTasks.findIndex(x=>x.id===fromId);
-        const toIdx=relTasks.findIndex(x=>x.id===t.id);
-        if(fromIdx<0||toIdx<0)return;
-        const [moved]=relTasks.splice(fromIdx,1);
-        // Update phase to match drop target
-        moved.phase=t.phase;
-        // Update hierarchy: if drop target is a sub-task or parent, join the same parent
-        if(t.parentId){
-          // Dropping into a sub-task group → become a sibling sub-task
-          moved.parentId=t.parentId;
-        } else {
-          // Check if drop is near the bottom half of the row (drop INTO as sub-task)
-          const rect=tr.getBoundingClientRect();
-          const relY=(e.clientY-rect.top)/rect.height;
-          const hasChildren=relTasks.some(x=>x.parentId===t.id)||state.tasks.some(x=>x.parentId===t.id);
-          if(relY>0.65&&!moved.parentId){
-            // Drop on lower 35% of a parent task → become a sub-task
-            moved.parentId=t.id;
-          } else {
-            // Normal reorder — remove parentId (promote to top-level)
-            delete moved.parentId;
-          }
-        }
-        relTasks.splice(toIdx,0,moved);
-        state.tasks=[...otherTasks,...relTasks];
-        save();renderTable();renderGantt();
-      });
       tr.addEventListener('click',()=>selectTask(t.id));
       tbody.appendChild(tr);
     });
@@ -2496,181 +2143,50 @@ function renderTable(){
 function updateField(inp){
   const id=inp.dataset.id,f=inp.dataset.f;
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  pushUndo();
-  t[f]=inp.value;
-  const isDateChange=f==='start'||f==='end';
-  if(isDateChange){
-    // Update days cell in same row without full table rebuild
-    const row=inp.closest('tr');
-    const daysInp=row?.querySelector('input[data-f="dur"]');
-    if(daysInp)daysInp.value=smartDaysBetween(t.start,t.end);
-    // Sync detail panel if this is the selected task
-    if(selectedTaskId===id){
-      const durEl=document.getElementById('d-dur');if(durEl)durEl.value=smartDaysBetween(t.start,t.end);
-      const endEl=document.getElementById('d-end');if(endEl&&f==='end')endEl.value=t.end;
-      const stEl=document.getElementById('d-start');if(stEl&&f==='start')stEl.value=t.start;
-    }
+  if(f==='owner'){
+    // Try to find member by name
+    t[f]=inp.value;
+  } else {
+    t[f]=inp.value;
   }
-  save(isDateChange?{cascade:true}:null);renderTable();renderGantt();updateTopbar();
+  if(f==='start'||f==='end'){
+    const dur=daysBetween(t.start,t.end);
+    // update dur field if visible
+  }
+  save();renderAll();
 }
 function updateDurField(inp){
-  const id=inp.dataset.id;let dur=Math.max(0,+(inp.value??0));
+  const id=inp.dataset.id;const dur=Math.max(1,+inp.value||1);
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  const unitSel=inp.closest('td')?.querySelector('select');
-  const unit=unitSel?unitSel.value:(t.durUnit||'d');
-  if(unit==='w')dur=dur*5;
-  t.end=dur>0?smartAddDays(t.start,dur-1):t.start;
-  if(dur===0)t.milestone=true; // 0 days = milestone // 1 day = same day
-  save({cascade:true});renderTable();renderGantt();updateTopbar();
+  t.end=addDays(t.start,dur-1);
+  save();renderAll();
 }
-function addTask(afterTaskId){
+function addTask(){
   const rel=activeRelease();if(!rel)return;
-  if(!state.nextTaskSeq||isNaN(state.nextTaskSeq))state.nextTaskSeq=Date.now()%100000;
   const today=new Date().toISOString().slice(0,10);
   const id='t'+(state.nextTaskSeq++);
-  // Use selected task's phase, or the phase of the afterTaskId, or default 'dev'
-  const refId=afterTaskId||selectedTaskId;
-  const refTask=refId?state.tasks.find(x=>x.id===refId):null;
-  const phase=refTask?refTask.phase:(PHASES[0]?.id||'dev');
-  const start=refTask?smartAddDays(refTask.end,1):today;
-  const newTask={id,releaseId:rel.id,phase,team:refTask?.team||'',name:'New Task',owner:'',start,end:smartAddDays(start,4),progress:0,deps:[],milestone:false,notes:''};
-  // Insert after the reference task AND all its sub-tasks (so uncollapsing doesn't shift it)
-  if(refId){
-    let insertAfterIdx=state.tasks.findIndex(x=>x.id===refId);
-    if(insertAfterIdx>=0){
-      // Skip past any sub-tasks belonging to refId or its descendants
-      const isDescendant=(t,ancestorId)=>{
-        let cur=t;
-        while(cur&&cur.parentId){if(cur.parentId===ancestorId)return true;cur=state.tasks.find(x=>x.id===cur.parentId);}
-        return false;
-      };
-      for(let i=insertAfterIdx+1;i<state.tasks.length;i++){
-        if(state.tasks[i].releaseId!==rel.id)break;
-        if(isDescendant(state.tasks[i],refId)||state.tasks[i].parentId===refId){insertAfterIdx=i;}
-        else break;
-      }
-      state.tasks.splice(insertAfterIdx+1,0,newTask);
-    } else {
-      state.tasks.push(newTask);
-    }
-  } else {
-    state.tasks.push(newTask);
-  }
-  save();renderTable();renderGantt();
+  state.tasks.push({id,releaseId:rel.id,phase:'dev',team:'',name:'New Task',owner:'',start:today,end:addDays(today,6),progress:0,deps:[],milestone:false,notes:''});
+  save();renderAll();
   selectTask(id);
-}
-function addSubTask(parentId){
-  const rel=activeRelease();if(!rel)return;
-  if(!state.nextTaskSeq||isNaN(state.nextTaskSeq))state.nextTaskSeq=Date.now()%100000;
-  const parent=state.tasks.find(x=>x.id===parentId);if(!parent)return;
-  const id='t'+(state.nextTaskSeq++);
-  const newTask={id,releaseId:rel.id,phase:parent.phase,team:parent.team||'',name:'New Sub-task',owner:'',start:parent.start,end:smartAddDays(parent.start,2),progress:0,deps:[],milestone:false,notes:'',parentId};
-  // Insert right after parent
-  const idx=state.tasks.findIndex(x=>x.id===parentId);
-  state.tasks.splice(idx+1,0,newTask);
-  save();renderTable();renderGantt();
-  selectTask(id);
-}
-function updateDurUnit(sel){
-  // User changed d/w unit in table row — just save the preference, don't change dates
-  const id=sel.dataset.id;
-  const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  t.durUnit=sel.value;
-  // Update the days input display
-  const row=sel.closest('tr');
-  const daysInp=row?.querySelector('input[data-f="dur"]');
-  if(daysInp){
-    const dur=smartDaysBetween(t.start,t.end);
-    daysInp.value=sel.value==='w'?Math.round(dur/5)||1:dur;
-  }
-  save();
-}
-function udDurUnit(unit){
-  // Detail panel unit changed
-  if(!selectedTaskId)return;
-  const t=state.tasks.find(x=>x.id===selectedTaskId);if(!t)return;
-  t.durUnit=unit;
-  // Refresh displayed duration value
-  const dur=smartDaysBetween(t.start,t.end);
-  const durEl=document.getElementById('d-dur');
-  if(durEl)durEl.value=unit==='w'?Math.round(dur/5)||1:dur;
-  save();
-}
-function convertToTask(taskId){
-  const t=state.tasks.find(x=>x.id===taskId);if(!t||!t.parentId)return;
-  pushUndo();
-  delete t.parentId;
-  save();renderTable();renderGantt();
-}
-function handleTaskNameKey(e,taskId){
-  if(e.key==='Tab'){
-    e.preventDefault();
-    const rel=activeRelease();if(!rel)return;
-    const relTasks=state.tasks.filter(t=>t.releaseId===rel.id);
-    const idx=relTasks.findIndex(t=>t.id===taskId);
-    const t=relTasks[idx];if(!t)return;
-    if(!e.shiftKey){
-      // Tab = indent: make this task a sub-task of the task above it
-      if(idx>0){
-        const prev=relTasks[idx-1];
-        // Find the actual parent: if prev is a sub-task, use its parent; otherwise use prev itself
-        const newParent=prev.parentId?prev.parentId:prev.id;
-        if(newParent!==taskId){
-          pushUndo();
-          t.parentId=newParent;
-          t.phase=relTasks.find(x=>x.id===newParent)?.phase||t.phase;
-          if(!t.deps.includes(newParent))t.deps.push(newParent);
-          save({cascade:true});renderTable();renderGantt();
-          // Refocus the same row's name input
-          setTimeout(()=>{const inp=document.querySelector('input[data-id="'+taskId+'"][data-f="name"]');if(inp)inp.focus();},50);
-        }
-      }
-    } else {
-      // Shift+Tab = outdent: promote sub-task to top-level
-      if(t.parentId){
-        pushUndo();
-        t.deps=t.deps.filter(d=>d!==t.parentId);
-        delete t.parentId;
-        save({cascade:true});renderTable();renderGantt();
-        setTimeout(()=>{const inp=document.querySelector('input[data-id="'+taskId+'"][data-f="name"]');if(inp)inp.focus();},50);
-      }
-    }
-  }
-}
-function addTaskInPhase(phase){
-  const rel=activeRelease();if(!rel)return;
-  if(!state.nextTaskSeq||isNaN(state.nextTaskSeq))state.nextTaskSeq=Date.now()%100000;
-  const today=new Date().toISOString().slice(0,10);
-  const id='t'+(state.nextTaskSeq++);
-  // Find last task in this phase and insert after it
-  const phaseTasks=state.tasks.filter(t=>t.releaseId===rel.id&&t.phase===phase);
-  const last=phaseTasks[phaseTasks.length-1];
-  const start=last?smartAddDays(last.end,1):today;
-  const newTask={id,releaseId:rel.id,phase:phase||PHASES[0]?.id||'dev',team:'',name:'New Task',owner:'',start,end:smartAddDays(start,4),progress:0,deps:[],milestone:false,notes:''};
-  if(last){const idx=state.tasks.findIndex(x=>x.id===last.id);state.tasks.splice(idx+1,0,newTask);}
-  else{state.tasks.push(newTask);}
-  save();renderTable();renderGantt();selectTask(id);
 }
 function deleteTask(id){
-  pushUndo();
   state.tasks=state.tasks.filter(t=>t.id!==id);
   state.tasks.forEach(t=>{t.deps=t.deps.filter(d=>d!==id)});
   if(selectedTaskId===id)closeDetail();
-  save();renderTable();renderGantt();updateTopbar();
+  save();renderAll();
 }
 function updateProgField(inp){
   const id=inp.dataset.id;
   const val=Math.max(0,Math.min(100,+inp.value||0));
   inp.value=val;
   const t=state.tasks.find(x=>x.id===id);
-  if(t){t.progress=val;save();renderTable();renderGantt();updateTopbar();}
+  if(t){t.progress=val;save();renderAll();}
 }
 function nudgeProg(id,delta){
   const t=state.tasks.find(x=>x.id===id);
   if(!t)return;
-  pushUndo();
-  t.progress=Math.max(0,Math.min(100,(t.progress||0)+delta));
-  save();renderTable();renderGantt();updateTopbar();
+  t.progress=Math.max(0,Math.min(100,t.progress+delta));
+  save();renderAll();
 }
 function startProgDrag(e,el){
   e.preventDefault();e.stopPropagation();
@@ -2690,10 +2206,7 @@ function selectTask(id){
   document.getElementById('d-name').value=t.name;
   document.getElementById('d-start').value=t.start;
   document.getElementById('d-end').value=t.end;
-  const _unit=t.durUnit||'d';
-  const _unitEl=document.getElementById('d-dur-unit');if(_unitEl)_unitEl.value=_unit;
-  const _rawDur=t.milestone?0:smartDaysBetween(t.start,t.end);
-  document.getElementById('d-dur').value=_unit==='w'?Math.round(_rawDur/5)||0:_rawDur;
+  document.getElementById('d-dur').value=daysBetween(t.start,t.end);
   document.getElementById('d-prog').value=t.progress;
   document.getElementById('d-pval').textContent=t.progress+'%';
   document.getElementById('d-notes').value=t.notes||'';
@@ -2722,112 +2235,27 @@ function udField(f,v){
   if(!selectedTaskId)return;
   const t=state.tasks.find(x=>x.id===selectedTaskId);if(!t)return;
   t[f]=v;
-  // Milestone: collapse to single day
-  if(f==='milestone'&&v){t.end=t.start;document.getElementById('d-end').value=t.end;document.getElementById('d-dur').value=0;}
-  if(f==='milestone'&&!v&&t.start===t.end){// unchecking milestone — give it 1 day
-    t.end=smartAddDays(t.start,1);document.getElementById('d-end').value=t.end;document.getElementById('d-dur').value=1;
-  }
   const tasks=activeTasks();computeWBS(tasks);
   document.getElementById('detail-title').textContent=(t.wbs||t.id)+': '+t.name;
-  save();renderTable();renderGantt();updateTopbar();
+  save();renderAll();
 }
 function udDateField(f,v){
   if(!selectedTaskId)return;
   const t=state.tasks.find(x=>x.id===selectedTaskId);if(!t)return;
   t[f]=v;
-  document.getElementById('d-dur').value=smartDaysBetween(t.start,t.end);
-  save({cascade:true});renderTable();renderGantt();updateTopbar();
+  document.getElementById('d-dur').value=daysBetween(t.start,t.end);
+  save();renderAll();
 }
 function udDuration(days){
   if(!selectedTaskId)return;
   const t=state.tasks.find(x=>x.id===selectedTaskId);if(!t)return;
-  const unit=(document.getElementById('d-dur-unit')||{}).value||'d';
-  const actualDays=unit==='w'?Math.max(0,days)*5:Math.max(0,days);
-  t.end=actualDays>0?smartAddDays(t.start,actualDays-1):t.start; // 0 days = milestone (same day)
+  t.end=addDays(t.start,Math.max(1,days)-1);
   document.getElementById('d-end').value=t.end;
-  save({cascade:true});renderTable();renderGantt();updateTopbar();
-}
-
-// SAVE CURRENT SCHEDULE AS TEMPLATE
-function saveCurrentAsTemplate(){
-  const rel=activeRelease();if(!rel)return;
-  const tasks=state.tasks.filter(t=>t.releaseId===rel.id);
-  if(!tasks.length){showModal('No Tasks','<p style="color:var(--muted)">No tasks to save as template.</p>',[{label:'OK',fn:closeModal}]);return;}
-  showModal('Save as Template',
-    '<p style="font-size:13px;color:var(--muted);margin-bottom:10px">This will save the current <strong>'+tasks.length+' tasks</strong> as the default template for all future releases. Dates will be adjusted relative to the release start date.</p>',
-    [{label:'Cancel',fn:closeModal},{label:'Save Template',primary:true,fn:()=>{
-      state.customTemplate=tasks.map((t,i)=>{
-        const start=new Date(t.start),end=new Date(t.end);
-        const startOff=Math.round((start-new Date(tasks[0].start))/86400000);
-        const dur=Math.max(1,Math.round((end-start)/86400000)+1);
-        const depIdxs=t.deps.map(d=>tasks.findIndex(x=>x.id===d)).filter(i=>i>=0);
-        return{phase:t.phase,name:t.name,dur,deps:depIdxs,milestone:!!t.milestone};
-      });
-      save();closeModal();
-      showModal('Template Saved','<p style="color:var(--success)">✅ Template saved! Use 📋 Load Template to apply it to any release.</p>',[{label:'OK',fn:closeModal}]);
-    }}]);
-}
-
-// EXPORT TEMPLATE AS FILE
-function exportTemplateFile(){
-  const tmpl=getTemplate();
-  if(!tmpl||!tmpl.length){showModal('No Template','<p style="color:var(--muted)">No template to export. Save a template first.</p>',[{label:'OK',fn:closeModal}]);return;}
-  const blob=new Blob([JSON.stringify(tmpl,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='release-hub-schedule-template.json';a.click();
-  URL.revokeObjectURL(url);
-}
-
-// IMPORT TEMPLATE FROM FILE
-function importTemplateFile(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const tmpl=JSON.parse(e.target.result);
-      if(!Array.isArray(tmpl)||!tmpl.length)throw new Error('Template must be a non-empty array');
-      // Validate basic shape
-      tmpl.forEach((t,i)=>{
-        if(!t.name)throw new Error('Row '+i+' missing "name" field');
-        if(typeof t.dur!=='number')t.dur=1;
-        if(!Array.isArray(t.deps))t.deps=[];
-        if(!t.phase)t.phase='dev';
-      });
-      showModal('Import Template',
-        '<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Found <strong>'+tmpl.length+' tasks</strong> in this file. This will replace your current template.</p>',
-        [{label:'Cancel',fn:closeModal},{label:'Import',primary:true,fn:()=>{
-          state.customTemplate=tmpl;save();closeModal();
-          showModal('Imported','<p style="color:var(--success)">✅ Template imported successfully! Use 📋 Load Template to apply it.</p>',[{label:'OK',fn:closeModal}]);
-        }}]);
-    }catch(err){
-      showModal('Import Failed','<p style="color:#ef4444">Could not parse template file:<br><code>'+esc(err.message)+'</code></p><p style="font-size:12px;color:var(--muted);margin-top:8px">The file must be a valid JSON array exported from Release Hub.</p>',[{label:'OK',fn:closeModal}]);
-    }
-    input.value='';
-  };
-  reader.readAsText(file);
-}
-
-// CLEAR SCHEDULE
-function confirmClearSchedule(){
-  const rel=activeRelease();if(!rel)return;
-  const count=state.tasks.filter(t=>t.releaseId===rel.id).length;
-  if(!count){showModal('Nothing to Clear','<p style="color:var(--muted)">No tasks for this release.</p>',[{label:'OK',fn:closeModal}]);return;}
-  showModal('Clear Schedule',
-    '<div style="text-align:center;padding:8px 0">'
-    +'<div style="font-size:32px;margin-bottom:10px">🗑️</div>'
-    +'<div style="font-size:15px;font-weight:700;margin-bottom:8px">Delete all '+count+' tasks?</div>'
-    +'<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#ef4444">This cannot be undone.</div>'
-    +'</div>',
-    [{label:'Cancel',fn:closeModal},{label:'Yes, Clear All',primary:true,fn:()=>{
-      state.tasks=state.tasks.filter(t=>t.releaseId!==rel.id);
-      selectedTaskId=null;save();closeModal();
-      renderTable();renderGantt();updateTopbar();
-    }}]);
+  save();renderAll();
 }
 
 // DEP PICKER
 function showDepPicker(taskId){
-  if(!taskId)taskId=selectedTaskId;
   const tasks=activeTasks();computeWBS(tasks);
   const t=tasks.find(x=>x.id===taskId);if(!t)return;
   const others=tasks.filter(x=>x.id!==taskId);
@@ -2839,17 +2267,11 @@ function showDepPicker(taskId){
   showModal('Pick Dependencies for '+esc(t.wbs)+' '+esc(t.name),
     '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Click tasks to toggle as dependencies:</p>'
     +'<div class="dep-picker-grid">'+chips+'</div>',
-    [{label:'Done',primary:true,fn:()=>{
-      autoSchedule('asap'); // snap tasks to start right after their deps end
-      save();
-      closeModal();renderTable();renderGantt();updateTopbar();
-      if(selectedTaskId)selectTask(selectedTaskId);
-    }}]);
+    [{label:'Done',primary:true,fn:()=>{save();closeModal();renderAll();if(selectedTaskId)selectTask(selectedTaskId);}}]);
 }
 function toggleDepChip(el,taskId){
   const depId=el.dataset.id;
   const t=state.tasks.find(x=>x.id===taskId);if(!t)return;
-  if(!Array.isArray(t.deps))t.deps=[];
   if(t.deps.includes(depId)){t.deps=t.deps.filter(d=>d!==depId);el.classList.remove('selected');}
   else{t.deps.push(depId);el.classList.add('selected');}
 }
@@ -2886,16 +2308,12 @@ function zoomFit(){
   renderGantt();
 }
 
-function parseLocalDate(ds){const p=String(ds).slice(0,10).split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
-function localDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dateToX(ds,min){return((parseLocalDate(ds)-parseLocalDate(min))/86400000)*pxPerDay;}
+function dateToX(ds,min){return((new Date(ds)-new Date(min))/86400000)*pxPerDay;}
 
 function renderGantt(){
   const tasks=activeTasks();
   computeWBS(tasks);
-  // Filter out sub-tasks of collapsed parents for Gantt display
-  const visibleTasks=tasks.filter(t=>!(t.parentId&&_collapsedTasks.has(t.parentId)));
-  critSet=computeCriticalPath(tasks); // use full task list for critical path
+  critSet=computeCriticalPath(tasks);
   const svg=document.getElementById('gantt');if(!svg)return;
   const showDeps=document.getElementById('show-deps')?.checked;
   const showToday=document.getElementById('show-today')?.checked;
@@ -2910,12 +2328,10 @@ function renderGantt(){
   if(ft&&ft.options.length<=1){TEAMS.forEach(tm=>{const o=document.createElement('option');o.value=tm;o.textContent=tm;ft.appendChild(o);});}
 
   if(!tasks.length){svg.innerHTML='';return;}
-  const allDates=visibleTasks.flatMap(t=>[t.start,t.end]).filter(Boolean).sort();
-  if(!allDates.length){svg.innerHTML='';return;}
-  const minD=parseLocalDate(allDates[0]);minD.setDate(minD.getDate()-3);
-  const maxD=parseLocalDate(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+7);
-  // Compute min as local date string (no timezone shift)
-  const min=minD.getFullYear()+'-'+String(minD.getMonth()+1).padStart(2,'0')+'-'+String(minD.getDate()).padStart(2,'0');
+  const allDates=tasks.flatMap(t=>[t.start,t.end]).filter(Boolean).sort();
+  const minD=new Date(allDates[0]);minD.setDate(minD.getDate()-3);
+  const maxD=new Date(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+7);
+  const min=minD.toISOString().slice(0,10);
   const totalDays=(maxD-minD)/86400000;
   const totalW=Math.max(400,totalDays*pxPerDay);
   const ROW_H=36,HDR_H=(viewMode==='months'||viewMode==='biweeks')?36:52,TASK_H=18;
@@ -2924,10 +2340,10 @@ function renderGantt(){
   // Build row list
   const rows=[];
   if(ganttGroupBy==='team'){
-    const teamSet=[...new Set(visibleTasks.map(t=>t.team||'Unassigned'))];
+    const teamSet=[...new Set(tasks.map(t=>t.team||'Unassigned'))];
     teamSet.forEach(tm=>{
       if(filterTeam&&tm!==filterTeam)return;
-      const tArr=sortedTasks(visibleTasks.filter(t=>(t.team||'Unassigned')===tm&&(!filterOwner||t.owner===filterOwner)));
+      const tArr=sortedTasks(tasks.filter(t=>(t.team||'Unassigned')===tm&&(!filterOwner||t.owner===filterOwner)));
       if(!tArr.length)return;
       rows.push({isHdr:true,label:tm,color:'#6366f1'});
       tArr.forEach(t=>{
@@ -2938,7 +2354,7 @@ function renderGantt(){
     });
   } else {
     PHASES.forEach(ph=>{
-      const tArr=sortedTasks(visibleTasks.filter(t=>t.phase===ph.id&&(!filterTeam||(t.team||'Unassigned')===filterTeam)&&(!filterOwner||t.owner===filterOwner)));
+      const tArr=sortedTasks(tasks.filter(t=>t.phase===ph.id&&(!filterTeam||(t.team||'Unassigned')===filterTeam)&&(!filterOwner||t.owner===filterOwner)));
       if(!tArr.length)return;
       const filtered=tArr.filter(t=>{
         if(filterShow==='milestones')return t.milestone;
@@ -2967,9 +2383,9 @@ function renderGantt(){
   mk('rect',{x:0,y:0,width:totalW,height:totalH,fill:gcBg});
 
   // weekend / grid
-  let cur=parseLocalDate(min);
+  let cur=new Date(min);
   while(cur<=maxD){
-    const x=dateToX(localDateStr(cur),min);
+    const x=dateToX(cur.toISOString().slice(0,10),min);
     const dow=cur.getDay();
     if(dow===0||dow===6)mk('rect',{x,y:0,width:pxPerDay,height:totalH,fill:isLight?'rgba(0,0,0,.03)':'rgba(255,255,255,.015)'});
     if(viewMode!=='months'&&dow===1)mk('line',{x1:x,y1:HDR_H,x2:x,y2:totalH,stroke:gcGrid,'stroke-width':1});
@@ -2980,21 +2396,21 @@ function renderGantt(){
   mk('rect',{x:0,y:0,width:totalW,height:HDR_H,fill:gcHdr});
   mk('line',{x1:0,y1:HDR_H,x2:totalW,y2:HDR_H,stroke:gcGrid,'stroke-width':1});
   // Month labels
-  let mc=parseLocalDate(min);mc.setDate(1);
+  let mc=new Date(min);mc.setDate(1);
   while(mc<=maxD){
-    const x=Math.max(0,dateToX(localDateStr(mc),min));
+    const x=Math.max(0,dateToX(mc.toISOString().slice(0,10),min));
     tx(mc.toLocaleDateString('en',{month:'short',year:'2-digit'}),x+4,15,{fill:gcMuted,'font-size':'11','font-weight':'600','font-family':ff});
     mk('line',{x1:x,y1:0,x2:x,y2:HDR_H,stroke:gcGrid,'stroke-width':1});
     mc.setMonth(mc.getMonth()+1);
   }
   if(viewMode==='biweeks'){
-    cur=parseLocalDate(min);
+    cur=new Date(min);
     while(cur<=maxD){
       const dow=cur.getDay();
       if(dow===1){
         const wn=getWeekNum(cur);
         if(wn%2===1){ // every other Monday = start of 2-week block
-          const x=dateToX(localDateStr(cur),min);
+          const x=dateToX(cur.toISOString().slice(0,10),min);
           const end=new Date(cur);end.setDate(end.getDate()+13);
           const label='W'+wn+'–'+(wn+1);
           tx(label,x+pxPerDay*7,26,{fill:gcMuted,'font-size':'10','text-anchor':'middle','font-family':ff});
@@ -3004,15 +2420,15 @@ function renderGantt(){
       cur.setDate(cur.getDate()+1);
     }
   } else if(viewMode!=='months'){
-    cur=parseLocalDate(min);
+    cur=new Date(min);
     while(cur<=maxD){
       const dow=cur.getDay();
       if(viewMode==='weeks'&&dow===1){
-        const x=dateToX(localDateStr(cur),min);
+        const x=dateToX(cur.toISOString().slice(0,10),min);
         const wn=getWeekNum(cur);
         tx('W'+wn,x+pxPerDay/2,32,{fill:gcMuted,'font-size':'10','text-anchor':'middle','font-family':ff});
       } else if(viewMode==='days'){
-        const x=dateToX(localDateStr(cur),min);
+        const x=dateToX(cur.toISOString().slice(0,10),min);
         const lbl=cur.getDate().toString();
         tx(lbl,x+pxPerDay/2,33,{fill:dow===0||dow===6?'#f59e0b':gcMuted,'font-size':'9','text-anchor':'middle','font-family':ff});
         if(pxPerDay>=20){const d2=['S','M','T','W','T','F','S'][dow];tx(d2,x+pxPerDay/2,44,{fill:gcMuted,'font-size':'8','text-anchor':'middle','font-family':ff});}
@@ -3105,8 +2521,6 @@ function renderGantt(){
     mkArr('arr-n','#6b7280');mkArr('arr-c','#ef4444');
     tasks.forEach(t=>{
       t.deps.forEach(depId=>{
-        // Skip arrow if depId is the task's own parent (parent dates roll up from children — no arrow needed)
-        if(t.parentId&&t.parentId===depId)return;
         const from=tasks.find(x=>x.id===depId);
         if(!from||taskRowY[t.id]==null||taskRowY[depId]==null)return;
         const isCrit=showCP&&critSet.has(t.id)&&critSet.has(depId);
@@ -3155,16 +2569,15 @@ function renderGantt(){
     // Green → connection dot placed 14px RIGHT of bar end (clear of resize grip)
     const cpX=bx2+bw2+14,cpY=taskRowY[t.id];
     // Green → dot: hidden until bar row is hovered (SVG presentation attribute opacity)
-    // Wide transparent hover zone — added FIRST so it's behind the handles
-    const hoverZone=mk('rect',{x:bx2-4,y:taskRowY[t.id]-ROW_H/2,width:bw2+26,height:ROW_H,fill:'transparent','cursor':'crosshair'},cpLayer);
-    // Green → dot (added AFTER hoverZone so it's on top and receives clicks)
     const cpG=mk('g',{'data-cp-task':t.id,'cursor':'crosshair'},cpLayer);
     cpG.setAttribute('opacity','0');
     mk('circle',{cx:cpX,cy:cpY,r:7,fill:'#22c55e',stroke:'#fff','stroke-width':1.5},cpG);
     mk('text',{x:cpX,y:cpY+4,'text-anchor':'middle',fill:'#fff','font-size':'9','font-weight':'700','font-family':ff,'pointer-events':'none'},cpG).textContent='→';
-    // Purple ● at left edge — also on top
+    // Purple ● at left edge: also hidden until hovered
     const depTgt=mk('circle',{cx:bx2,cy:cpY,r:5,fill:'#6366f1',stroke:'#fff','stroke-width':1.5,'data-dep-target':t.id,'cursor':'cell'},cpLayer);
     depTgt.setAttribute('opacity','0');
+    // Wide transparent hover zone over the bar row
+    const hoverZone=mk('rect',{x:bx2-4,y:taskRowY[t.id]-ROW_H/2,width:bw2+26,height:ROW_H,fill:'transparent','cursor':'crosshair'},cpLayer);
     const showH=()=>{cpG.setAttribute('opacity','1');depTgt.setAttribute('opacity','.75');};
     const hideH=()=>{if(!depDrag){cpG.setAttribute('opacity','0');depTgt.setAttribute('opacity','0');}};
     hoverZone.addEventListener('mouseenter',showH);
@@ -3345,8 +2758,7 @@ _rh.addEventListener('mousedown',e=>{
 document.addEventListener('mousemove',e=>{
   if(!sidebarDrag)return;
   const dx=e.clientX-sidebarDrag.startX;
-  const maxW=Math.floor(window.innerWidth*0.75);
-  const w=Math.max(180,Math.min(maxW,sidebarDrag.startW+dx));
+  const w=Math.max(180,Math.min(640,sidebarDrag.startW+dx));
   document.getElementById('sidebar').style.width=w+'px';
   document.getElementById('sidebar').style.flex='none';
 });
@@ -4286,8 +3698,8 @@ function renderCMTimeline(){
     ...state.customerMilestones.map(cm=>cm.date).filter(Boolean)
   ].sort();
   if(!allDates.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">Add milestones above to see the timeline.</p>';return;}
-  const minD=parseLocalDate(allDates[0]);minD.setDate(minD.getDate()-7);
-  const maxD=parseLocalDate(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+14);
+  const minD=new Date(allDates[0]);minD.setDate(minD.getDate()-7);
+  const maxD=new Date(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+14);
   const totalDays=(maxD-minD)/86400000;
   const pct=d=>{if(!d)return null;const p=(new Date(d)-minD)/86400000/totalDays*100;return Math.max(.5,Math.min(99.5,p));};
   const fmtFull=d=>{if(!d)return'';return new Date(d).toLocaleDateString('en',{month:'short',day:'numeric',year:'2-digit'});};
@@ -4573,8 +3985,8 @@ function renderMRGantt(){
   // Date range across all tasks
   const allDates=releaseGroups.flatMap(g=>g.tasks.flatMap(t=>[t.start,t.end])).filter(Boolean).sort();
   if(!allDates.length){svg.innerHTML='<text x="20" y="40" fill="#64748b" font-size="14" font-family="Inter,system-ui,sans-serif">No tasks found for selected releases.</text>';return;}
-  const minD=parseLocalDate(allDates[0]);minD.setDate(minD.getDate()-3);
-  const maxD=parseLocalDate(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+5);
+  const minD=new Date(allDates[0]);minD.setDate(minD.getDate()-3);
+  const maxD=new Date(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+5);
   const totalDays=(maxD-minD)/86400000;
   const pxPD=mrViewMode==='months'?Math.max(3,Math.floor(800/totalDays)):Math.max(8,Math.floor(1200/totalDays));
   const totalW=Math.max(800,totalDays*pxPD);
@@ -4616,7 +4028,7 @@ function renderMRGantt(){
   let cur=new Date(minD);
   while(cur<=maxD){
     const dow=cur.getDay();
-    if(dow===0||dow===6)mk('rect',{x:dateToX(localDateStr(cur)),y:0,width:pxPD,height:totalH,fill:isLight?'rgba(0,0,0,.025)':'rgba(255,255,255,.015)'});
+    if(dow===0||dow===6)mk('rect',{x:dateToX(cur.toISOString().slice(0,10)),y:0,width:pxPD,height:totalH,fill:isLight?'rgba(0,0,0,.025)':'rgba(255,255,255,.015)'});
     cur.setDate(cur.getDate()+1);
   }
 
@@ -4627,7 +4039,7 @@ function renderMRGantt(){
   // Month labels
   let mc=new Date(minD);mc.setDate(1);
   while(mc<=maxD){
-    const x=Math.max(0,dateToX(localDateStr(mc)));
+    const x=Math.max(0,dateToX(mc.toISOString().slice(0,10)));
     tx(mc.toLocaleDateString('en',{month:'short',year:'2-digit'}),x+4,15,{fill:gcMuted,'font-size':'11','font-weight':'600','font-family':ff});
     mk('line',{x1:x,y1:0,x2:x,y2:HDR_H,stroke:gcGrid,'stroke-width':1});
     mc.setMonth(mc.getMonth()+1);
@@ -4637,7 +4049,7 @@ function renderMRGantt(){
     cur=new Date(minD);
     while(cur<=maxD){
       const dow=cur.getDay();
-      if(dow===1){const x=dateToX(localDateStr(cur));tx('W'+getWeekNum(cur),x+pxPD/2,34,{fill:gcMuted,'font-size':'9','text-anchor':'middle','font-family':ff});}
+      if(dow===1){const x=dateToX(cur.toISOString().slice(0,10));tx('W'+getWeekNum(cur),x+pxPD/2,34,{fill:gcMuted,'font-size':'9','text-anchor':'middle','font-family':ff});}
       cur.setDate(cur.getDate()+1);
     }
   }
@@ -4995,35 +4407,13 @@ function exportCheatSheetCSV(){
 // ══════════════════════════════════════════════
 //  RISK REGISTER
 // ══════════════════════════════════════════════
-// ENA Risk Register Framework
-const RISK_AREAS=['Safety Behavior','Functional Performance','Validation Confidence','Configuration & Compatibility','Operational Readiness','Observability'];
-const RISK_LEVELS_ENA=[
-  {id:'R0',label:'R0 — Critical / Safety-Catastrophic',color:'#7f1d1d',bg:'#fee2e2'},
-  {id:'R1',label:'R1 — High / Safety-Degrading',color:'#c2410c',bg:'#fed7aa'},
-  {id:'R2',label:'R2 — Medium / Functional Degradation',color:'#a16207',bg:'#fef08a'},
-  {id:'R3',label:'R3 — Low / Non-Critical',color:'#15803d',bg:'#dcfce7'},
-  {id:'R4',label:'R4 — Informational / Observability Gap',color:'#1d4ed8',bg:'#dbeafe'},
-];
-const RISK_SEVERITY=['S1 — Safety/Regulatory','S2 — Safety Margin/Operational','S3 — Functional/Non-Critical'];
-const RISK_LIKELIHOOD=['Frequent','Occasional','Rare','Unknown'];
-const RISK_DETECTABILITY=['Hard','Moderate','Easy','Unknown'];
-const RISK_DECISIONS=['Block Release','Fix Before Release','Ship With Controls','Accepted Risk','Defer','Monitor','Hotfix Candidate','TBD'];
+const RISK_CATS=['Technical','Schedule','Resource','External','Compliance'];
 const RISK_STATUSES=[
   {id:'open',label:'Open',color:'#ef4444'},
   {id:'mitigating',label:'Mitigating',color:'#f59e0b'},
   {id:'accepted',label:'Accepted',color:'#6366f1'},
-  {id:'monitoring',label:'Monitoring',color:'#06b6d4'},
   {id:'closed',label:'Closed',color:'#22c55e'},
-  {id:'escalated',label:'Escalated',color:'#7f1d1d'},
 ];
-// Legacy compat helpers
-function enaLevelColor(r){const l=RISK_LEVELS_ENA.find(x=>x.id===r?.riskLevel)||RISK_LEVELS_ENA[2];return l.color;}
-function enaLevelLabel(r){
-  if(r?.riskLevel)return r.riskLevel;
-  // fallback: derive from old probability×impact
-  const s=(r?.probability||1)*(r?.impact||1);
-  return s>=15?'R0':s>=10?'R1':s>=5?'R2':'R3';
-}
 function riskColor(score){return score>=15?'#ef4444':score>=10?'#f97316':score>=5?'#f59e0b':'#22c55e';}
 function riskLevel(score){return score>=15?'Critical':score>=10?'High':score>=5?'Medium':'Low';}
 
@@ -5038,58 +4428,50 @@ function renderRisk(){
   let risks=[...state.risks];
   if(rrel)risks=risks.filter(r=>r.releaseId===rrel);
   if(rst)risks=risks.filter(r=>r.status===rst);
-  if(rcat)risks=risks.filter(r=>enaLevelLabel(r)===rcat);
-  // Sort: R0 first, then R1, etc.
-  const rOrder={'R0':0,'R1':1,'R2':2,'R3':3,'R4':4};
-  risks.sort((a,b)=>(rOrder[enaLevelLabel(a)]||5)-(rOrder[enaLevelLabel(b)]||5));
+  if(rcat)risks=risks.filter(r=>r.category===rcat);
+  risks.sort((a,b)=>(b.probability*b.impact)-(a.probability*a.impact));
 
-  // ENA Risk Level Summary
+  // Risk Matrix
+  const isLight=document.documentElement.dataset.theme==='light';
   const matrixRisks=state.risks.filter(r=>(!rrel||r.releaseId===rrel));
-  const levelCounts={R0:0,R1:0,R2:0,R3:0,R4:0};
-  matrixRisks.forEach(r=>{const l=enaLevelLabel(r);if(levelCounts[l]!==undefined)levelCounts[l]++;});
-  const matrixHTML='<div style="display:flex;flex-direction:column;gap:6px;min-width:220px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">ENA RISK DISTRIBUTION</div>'
-    +RISK_LEVELS_ENA.map(l=>'<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:'+l.bg+'22;border:1px solid '+l.color+'44">'
-      +'<span style="font-weight:800;font-size:13px;color:'+l.color+';min-width:24px">'+levelCounts[l.id]+'</span>'
-      +'<span style="font-size:11px;color:'+l.color+';font-weight:600">'+l.id+'</span>'
-      +'<span style="font-size:10px;color:var(--muted)">'+l.label.split('—')[1].trim()+'</span>'
-      +'</div>').join('')
-    +'<div style="margin-top:6px;padding:8px 10px;background:rgba(99,102,241,.08);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.5">'
-    +'<strong style="color:var(--text)">Core question:</strong><br>Do we understand the risk well enough to release, delay, mitigate, exclude, or hotfix?'
-    +'</div></div>';
+  const matrixHTML=buildRiskMatrix(matrixRisks,isLight);
 
-  document.getElementById('risk-matrix-wrap').innerHTML=matrixHTML;
+  // Legend
+  const legendHTML='<div style="display:flex;flex-direction:column;gap:6px;justify-content:center"><div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">RISK LEVEL</div>'
+    +[['#ef4444','Critical (15-25)'],['#f97316','High (10-14)'],['#f59e0b','Medium (5-9)'],['#22c55e','Low (1-4)']].map(([c,l])=>'<div style="display:flex;align-items:center;gap:6px;font-size:11px"><div style="width:12px;height:12px;border-radius:2px;background:'+c+'"></div>'+l+'</div>').join('')
+    +'<div style="margin-top:8px;font-size:10px;color:var(--muted)">Hover arrows on<br>Gantt to delete deps</div>'
+    +'</div>';
+
+  document.getElementById('risk-matrix-wrap').innerHTML=matrixHTML+legendHTML;
 
   // Table
   const tbody=document.getElementById('risk-tbody');if(!tbody)return;
   tbody.innerHTML='';
   if(!risks.length){const tr=document.createElement('tr');tr.innerHTML='<td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">No risks logged. Click "+ Add Risk" to start.</td>';tbody.appendChild(tr);return;}
   risks.forEach(risk=>{
-    const lvlId=enaLevelLabel(risk);
-    const lvlDef=RISK_LEVELS_ENA.find(x=>x.id===lvlId)||RISK_LEVELS_ENA[2];
+    const score=risk.probability*risk.impact;
+    const col=riskColor(score);const lvl=riskLevel(score);
     const st=RISK_STATUSES.find(s=>s.id===risk.status)||RISK_STATUSES[0];
     const rel=state.releases.find(r=>r.id===risk.releaseId);
     const tr=document.createElement('tr');
     tr.style.borderTop='1px solid var(--border)';
     tr.innerHTML='<td style="padding:7px 12px;font-family:monospace;font-size:10px;color:var(--muted)">'+esc(risk.id)+'</td>'
-      +'<td style="padding:7px 12px"><div style="font-weight:500;font-size:12px">'+esc(risk.title)+'</div>'
-        +(risk.area?'<div style="font-size:10px;color:var(--muted)">'+esc(risk.area)+'</div>':'')
-        +(risk.mitigation?'<div style="font-size:10px;color:var(--muted)">→ '+esc(risk.mitigation)+'</div>':'')+'</td>'
-      +'<td style="padding:7px 12px;text-align:center"><span style="background:'+lvlDef.color+'22;color:'+lvlDef.color+';font-weight:800;font-size:13px;padding:2px 8px;border-radius:6px;border:1px solid '+lvlDef.color+'44">'+lvlId+'</span></td>'
-      +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+(risk.severity||'—')+'</td>'
-      +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+(risk.likelihood||'—')+'</td>'
-      +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+(risk.detectability||'—')+'</td>'
+      +'<td style="padding:7px 12px"><div style="font-weight:500;font-size:12px">'+esc(risk.title)+'</div>'+(risk.mitigation?'<div style="font-size:10px;color:var(--muted)">→ '+esc(risk.mitigation)+'</div>':'')+'</td>'
+      +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+esc(risk.category||'')+'</td>'
+      +'<td style="padding:7px 12px;text-align:center;font-weight:700;font-size:13px">'+risk.probability+'</td>'
+      +'<td style="padding:7px 12px;text-align:center;font-weight:700;font-size:13px">'+risk.impact+'</td>'
+      +'<td style="padding:7px 12px;text-align:center"><span style="background:'+col+'25;color:'+col+';font-weight:800;font-size:14px;padding:1px 7px;border-radius:6px">'+score+'</span></td>'
+      +'<td style="padding:7px 12px"><span style="background:'+col+'20;color:'+col+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">'+lvl+'</span></td>'
       +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+esc(risk.owner||'—')+'</td>'
       +'<td style="padding:7px 12px"><span style="background:'+st.color+'20;color:'+st.color+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">'+st.label+'</span></td>'
-      +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+(risk.decision?esc(risk.decision):'—')+'</td>'
       +'<td style="padding:7px 12px;font-size:11px;color:var(--muted)">'+(rel?esc(rel.name):'—')+'</td>'
-      +'<td style="padding:7px 12px"><button class="del-btn" onclick="event.stopPropagation();editRiskModal(\''+risk.id+'\')">✏</button> <button class="del-btn" onclick="event.stopPropagation();deleteRisk(\''+risk.id+'\')">×</button></td>';
+      +'<td style="padding:7px 12px"><button class="del-btn" onclick="editRiskModal(\''+risk.id+'\')">✏</button> <button class="del-btn" onclick="deleteRisk(\''+risk.id+'\')">×</button></td>';
     tr.addEventListener('click',()=>editRiskModal(risk.id));
     tbody.appendChild(tr);
   });
 
-  // Update badge — R0 or R1 open risks
-  const openRisks=state.risks.filter(r=>r.status==='open'&&['R0','R1'].includes(enaLevelLabel(r))).length;
+  // Update badge
+  const openRisks=state.risks.filter(r=>r.status==='open'&&r.probability*r.impact>=10).length;
   const badge=document.getElementById('risk-badge');
   if(badge){badge.textContent=openRisks;badge.style.display=openRisks>0?'':'none';}
 }
@@ -5132,41 +4514,45 @@ function editRiskModal(id){
   if(!state.risks)state.risks=[];
   if(!state.nextRiskSeq)state.nextRiskSeq=1;
   const rk=id?state.risks.find(x=>x.id===id):null;
-  const lvlOpts=RISK_LEVELS_ENA.map(l=>'<option value="'+l.id+'"'+(rk&&rk.riskLevel===l.id?' selected':(!rk&&l.id==='R2'?' selected':''))+'>'+l.label+'</option>').join('');
-  const sevOpts=RISK_SEVERITY.map(s=>'<option value="'+s+'"'+(rk&&rk.severity===s?' selected':'')+'>'+s+'</option>').join('');
-  const lhOpts=RISK_LIKELIHOOD.map(s=>'<option value="'+s+'"'+(rk&&rk.likelihood===s?' selected':'')+'>'+s+'</option>').join('');
-  const detOpts=RISK_DETECTABILITY.map(s=>'<option value="'+s+'"'+(rk&&rk.detectability===s?' selected':'')+'>'+s+'</option>').join('');
-  const areaOpts='<option value="">Select area…</option>'+RISK_AREAS.map(a=>'<option value="'+a+'"'+(rk&&rk.area===a?' selected':'')+'>'+a+'</option>').join('');
-  const decOpts='<option value="TBD">TBD</option>'+RISK_DECISIONS.filter(d=>d!=='TBD').map(d=>'<option value="'+d+'"'+(rk&&rk.decision===d?' selected':'')+'>'+d+'</option>').join('');
+  const catOpts=RISK_CATS.map(c=>'<option value="'+c+'"'+(rk&&rk.category===c?' selected':'')+'>'+c+'</option>').join('');
   const stOpts=RISK_STATUSES.map(s=>'<option value="'+s.id+'"'+(rk&&rk.status===s.id?' selected':'')+'>'+s.label+'</option>').join('');
   const relOpts=state.releases.map(r=>'<option value="'+r.id+'"'+((rk&&rk.releaseId===r.id)||(!rk&&r.id===state.activeReleaseId)?' selected':'')+'>'+esc(r.name)+'</option>').join('');
   const ownerOpts='<option value="">Unassigned</option>'+state.teamMembers.map(m=>'<option value="'+esc(m.name)+'"'+(rk&&rk.owner===m.name?' selected':'')+'>'+esc(m.name)+'</option>').join('');
   showModal(rk?'Edit Risk':'Add Risk',
     '<div class="form-grid">'
-    +'<div class="full field"><label>Risk Statement *</label><textarea id="rk-title" style="min-height:52px">'+esc(rk?rk.title:'')+'</textarea></div>'
-    +'<div class="field"><label>Risk Level (R0–R4)</label><select id="rk-level">'+lvlOpts+'</select></div>'
-    +'<div class="field"><label>Affected Area</label><select id="rk-area">'+areaOpts+'</select></div>'
-    +'<div class="field"><label>Severity</label><select id="rk-sev">'+sevOpts+'</select></div>'
-    +'<div class="field"><label>Likelihood</label><select id="rk-lh">'+lhOpts+'</select></div>'
-    +'<div class="field"><label>Detectability</label><select id="rk-det">'+detOpts+'</select></div>'
-    +'<div class="field"><label>Owner</label><select id="rk-owner">'+ownerOpts+'</select></div>'
+    +'<div class="full field"><label>Risk Title *</label><input id="rk-title" value="'+esc(rk?rk.title:'')+'"></div>'
+    +'<div class="field"><label>Category</label><select id="rk-cat">'+catOpts+'</select></div>'
     +'<div class="field"><label>Release</label><select id="rk-rel">'+relOpts+'</select></div>'
+    +'<div class="field"><label>Probability (1=Rare → 5=Almost Certain)</label>'
+    +'<input type="range" min="1" max="5" value="'+(rk?rk.probability:3)+'" id="rk-prob" oninput="document.getElementById(\'rk-prob-val\').textContent=this.value;updateRiskScore()">'
+    +'<span id="rk-prob-val" style="font-size:12px;font-weight:700">'+(rk?rk.probability:3)+'</span></div>'
+    +'<div class="field"><label>Impact (1=Negligible → 5=Catastrophic)</label>'
+    +'<input type="range" min="1" max="5" value="'+(rk?rk.impact:3)+'" id="rk-imp" oninput="document.getElementById(\'rk-imp-val\').textContent=this.value;updateRiskScore()">'
+    +'<span id="rk-imp-val" style="font-size:12px;font-weight:700">'+(rk?rk.impact:3)+'</span></div>'
+    +'<div class="full" style="text-align:center;margin-bottom:8px"><div style="display:inline-block;padding:8px 20px;border-radius:8px;font-size:18px;font-weight:800" id="rk-score-display">Score: '+(rk?rk.probability*rk.impact:9)+'</div></div>'
+    +'<div class="field"><label>Owner</label><select id="rk-owner">'+ownerOpts+'</select></div>'
     +'<div class="field"><label>Status</label><select id="rk-status">'+stOpts+'</select></div>'
-    +'<div class="field"><label>Decision</label><select id="rk-dec">'+decOpts+'</select></div>'
-    +'<div class="full field"><label>Description / Context</label><textarea id="rk-desc">'+esc(rk?rk.description||'':'')+'</textarea></div>'
-    +'<div class="full field"><label>Evidence</label><textarea id="rk-evidence" placeholder="Simulation results, vehicle testing, logs, telemetry, soak results…">'+esc(rk?rk.evidence||'':'')+'</textarea></div>'
-    +'<div class="full field"><label>Mitigation / Containment</label><textarea id="rk-mit" placeholder="Fix, feature flag, limited rollout, monitoring threshold, rollback plan…">'+esc(rk?rk.mitigation||'':'')+'</textarea></div>'
-    +'<div class="full field"><label>Exit Criteria</label><textarea id="rk-exit" placeholder="What must be true before this risk can be closed or allowed through a gate?">'+esc(rk?rk.exitCriteria||'':'')+'</textarea></div>'
+    +'<div class="full field"><label>Description</label><textarea id="rk-desc">'+esc(rk?rk.description||'':'')+'</textarea></div>'
+    +'<div class="full field"><label>Mitigation Plan</label><textarea id="rk-mit">'+esc(rk?rk.mitigation||'':'')+'</textarea></div>'
     +'</div>',
     [{label:'Cancel',fn:closeModal},
      rk?{label:'Delete Risk',fn:()=>{deleteRisk(rk.id);closeModal();}}:{label:'',fn:()=>{}},
      {label:rk?'Save':'Add Risk',primary:true,fn:()=>{
       const title=document.getElementById('rk-title').value.trim();if(!title)return;
-      const fields={title,riskLevel:document.getElementById('rk-level').value,area:document.getElementById('rk-area').value,severity:document.getElementById('rk-sev').value,likelihood:document.getElementById('rk-lh').value,detectability:document.getElementById('rk-det').value,owner:document.getElementById('rk-owner').value,status:document.getElementById('rk-status').value||'open',releaseId:document.getElementById('rk-rel').value,decision:document.getElementById('rk-dec').value,description:document.getElementById('rk-desc').value,evidence:document.getElementById('rk-evidence').value,mitigation:document.getElementById('rk-mit').value,exitCriteria:document.getElementById('rk-exit').value};
-      if(rk){Object.assign(rk,fields);}
-      else{if(!state.nextRiskSeq)state.nextRiskSeq=1;state.risks.push({id:'RK'+String(state.nextRiskSeq++).padStart(3,'0'),...fields,createdAt:new Date().toISOString().slice(0,10)});}
+      const prob=+document.getElementById('rk-prob').value;
+      const imp=+document.getElementById('rk-imp').value;
+      if(rk){rk.title=title;rk.category=document.getElementById('rk-cat').value;rk.probability=prob;rk.impact=imp;rk.owner=document.getElementById('rk-owner').value;rk.status=document.getElementById('rk-status').value;rk.releaseId=document.getElementById('rk-rel').value;rk.description=document.getElementById('rk-desc').value;rk.mitigation=document.getElementById('rk-mit').value;}
+      else{if(!state.nextRiskSeq)state.nextRiskSeq=1;state.risks.push({id:'RK'+String(state.nextRiskSeq++).padStart(3,'0'),title,category:document.getElementById('rk-cat').value,probability:prob,impact:imp,owner:document.getElementById('rk-owner').value,status:document.getElementById('rk-status').value||'open',releaseId:document.getElementById('rk-rel').value,description:document.getElementById('rk-desc').value,mitigation:document.getElementById('rk-mit').value,createdAt:new Date().toISOString().slice(0,10)});}
       save();closeModal();renderRisk();updateTopbar();
     }}]);
+  setTimeout(updateRiskScore,50);
+}
+function updateRiskScore(){
+  const p=+(document.getElementById('rk-prob')||{}).value||3;
+  const i=+(document.getElementById('rk-imp')||{}).value||3;
+  const score=p*i;const col=riskColor(score);const lvl=riskLevel(score);
+  const el=document.getElementById('rk-score-display');
+  if(el){el.textContent='Score: '+score+' — '+lvl;el.style.background=col+'25';el.style.color=col;}
 }
 function deleteRisk(id){state.risks=state.risks.filter(r=>r.id!==id);save();renderRisk();updateTopbar();}
 
@@ -5184,17 +4570,12 @@ function renderTemplateEditor(){
     +'<thead><tr style="background:var(--surface2)"><th style="padding:4px 6px;text-align:left;color:var(--muted);font-size:10px">Phase</th><th style="padding:4px 6px;text-align:left;color:var(--muted);font-size:10px">Task Name</th><th style="padding:4px 6px;text-align:left;color:var(--muted);font-size:10px">Days</th><th style="padding:4px 6px;text-align:left;color:var(--muted);font-size:10px">Deps (idx)</th><th style="padding:4px 6px;text-align:left;color:var(--muted);font-size:10px">MS</th><th></th></tr></thead>'
     +'<tbody id="tmpl-tbody">'
     +tmpl.map((t,i)=>'<tr data-tmpl-idx="'+i+'" style="border-top:1px solid var(--border)">'
-      +'<td style="padding:3px 5px;color:var(--muted);font-size:11px;font-weight:700;min-width:24px">'+i+'</td>'
       +'<td style="padding:3px 5px"><select class="site-input" onchange="updateTmplRow('+i+',\'phase\',this.value)">'+PHASES.map(ph=>'<option value="'+ph.id+'"'+(ph.id===t.phase?' selected':'')+'>'+ph.name+'</option>').join('')+'</select></td>'
       +'<td style="padding:3px 5px"><input class="site-input" value="'+esc(t.name)+'" oninput="updateTmplRow('+i+',\'name\',this.value)"></td>'
       +'<td style="padding:3px 5px"><input class="site-input" type="number" value="'+t.dur+'" min="1" style="width:50px" oninput="updateTmplRow('+i+',\'dur\',+this.value)"></td>'
-      +'<td style="padding:3px 5px"><input class="site-input" value="'+esc((t.deps||[]).join(','))+'" style="width:70px" title="Comma-separated row indices (see # column)" oninput="updateTmplRow('+i+',\'deps\',this.value.split(\',\').map(Number).filter(n=>!isNaN(n)))"></td>'
+      +'<td style="padding:3px 5px"><input class="site-input" value="'+esc((t.deps||[]).join(','))+'" style="width:70px" oninput="updateTmplRow('+i+',\'deps\',this.value.split(\',\').map(Number).filter(n=>!isNaN(n)))"></td>'
       +'<td style="padding:3px 5px;text-align:center"><input type="checkbox"'+(t.milestone?' checked':'')+' onchange="updateTmplRow('+i+',\'milestone\',this.checked)"></td>'
-      +'<td style="padding:3px 5px;display:flex;gap:3px">'
-        +(i>0?'<button class="btn sm" style="padding:1px 5px;font-size:11px" onclick="moveTmplRow('+i+',-1)" title="Move up">▲</button>':'<span style="width:26px"></span>')
-        +(i<tmpl.length-1?'<button class="btn sm" style="padding:1px 5px;font-size:11px" onclick="moveTmplRow('+i+',1)" title="Move down">▼</button>':'<span style="width:26px"></span>')
-        +'<button class="del-btn" onclick="deleteTmplRow('+i+')">×</button>'
-      +'</td>'
+      +'<td style="padding:3px 5px"><button class="del-btn" onclick="deleteTmplRow('+i+')">×</button></td>'
       +'</tr>').join('')
     +'</tbody></table>';
 }
@@ -5210,15 +4591,6 @@ function deleteTmplRow(idx){
 function addTemplateRow(){
   if(!state.customTemplate)state.customTemplate=[...DEFAULT_TEMPLATE.map(t=>({...t}))];
   state.customTemplate.push({phase:'dev',name:'New Task',dur:5,deps:[],milestone:false});
-  save();renderTemplateEditor();
-}
-function moveTmplRow(idx,dir){
-  if(!state.customTemplate)state.customTemplate=[...DEFAULT_TEMPLATE.map(t=>({...t}))];
-  const newIdx=idx+dir;
-  if(newIdx<0||newIdx>=state.customTemplate.length)return;
-  const tmp=state.customTemplate[idx];
-  state.customTemplate[idx]=state.customTemplate[newIdx];
-  state.customTemplate[newIdx]=tmp;
   save();renderTemplateEditor();
 }
 
@@ -5247,8 +4619,6 @@ function renderSettings(){
   if(activeStab==='checklist-tmpl')renderChecklistTemplateEdit();
   // Reference Data tab
   if(activeStab==='reference'){renderADKEdit();renderVPEdit();renderSitesEdit();renderPartnersEdit();}
-  // Holidays tab
-  if(activeStab==='holidays')renderHolidays();
   // Team tab
   if(activeStab==='team'){
   // Team members list
@@ -5430,19 +4800,7 @@ function switchSettingsTab(tab){
   renderSettings();
 }
 
-function addGlobalPhase(){
-  showModal('Add Phase',
-    '<div class="field"><label>Phase Name</label><input id="new-phase-name" placeholder="e.g. Validation" style="width:100%"></div>'
-    +'<div class="field"><label>Color</label><input type="color" id="new-phase-color" value="#06b6d4"></div>',
-    [{label:'Cancel',fn:closeModal},{label:'Add Phase',primary:true,fn:()=>{
-      const n=(document.getElementById('new-phase-name')||{}).value?.trim();
-      if(!n)return;
-      const col=document.getElementById('new-phase-color')?.value||'#06b6d4';
-      PHASES.push({id:n.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now(),name:n,color:col});
-      save();closeModal();renderSettings();renderAll();
-    }}]);
-  setTimeout(()=>document.getElementById('new-phase-name')?.focus(),50);
-}
+function addGlobalPhase(){const n=prompt('Phase name:');if(!n)return;PHASES.push({id:n.toLowerCase().replace(/\s+/g,'_'),name:n,color:'#06b6d4'});save();renderSettings();renderAll();}
 function addGlobalTeam(){
   showModal('Add Team',
     '<div class="field"><label>Team Name</label><input id="new-team-name" placeholder="e.g. Autonomy, Firmware…" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:6px;font-size:13px;outline:none" autofocus></div>',
@@ -5670,7 +5028,9 @@ document.getElementById('main-modal').addEventListener('click',e=>{if(e.target==
 function renderAll(){
   updateTopbar();
   if(currentTab==='roadmap')renderRoadmap();
-  else if(currentTab==='schedule'){renderTable();renderGantt();setTimeout(applyColState,0);}
+  // Keep column visibility in sync after every render
+  if(currentTab==='schedule')setTimeout(applyColState,0);
+  else if(currentTab==='schedule'){renderTable();renderGantt();}
   else if(currentTab==='issues')renderIssues();
   else if(currentTab==='scope')renderScope();
   else if(currentTab==='risk')renderRisk();
