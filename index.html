@@ -1422,7 +1422,7 @@ function topoSort(tasks){
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
 function activeTasks(){return (state.tasks||[]).filter(t=>t.releaseId===state.activeReleaseId)}
 function activeRelease(){return state.releases.find(r=>r.id===state.activeReleaseId)||state.releases[0]}
-function addDays(dateStr,n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function addDays(dateStr,n){const d=parseLocalDate(dateStr);d.setDate(d.getDate()+n);return localDateStr(d)}
 // ── Working Days helpers ──────────────────────────────────────
 function getHolidays(){return state.holidays||[];}
 function isHoliday(dateStr){return getHolidays().some(h=>h.date===dateStr.slice(0,10));}
@@ -1436,11 +1436,11 @@ function isWorkDay(dateStr){
 }
 function useWorkDays(){return !!(state.workingDaysOnly);}
 function addWorkDays(dateStr,n){
-  // Skip weekends + holidays
-  let d=new Date(dateStr);let added=0;
+  // Skip weekends + holidays — use local date to avoid UTC offset day-shift
+  let d=parseLocalDate(dateStr);let added=0;
   const sign=n<0?-1:1;const abs=Math.abs(n);
-  while(added<abs){d.setDate(d.getDate()+sign);const ds=d.toISOString().slice(0,10);if(isWorkDay(ds))added++;}
-  return d.toISOString().slice(0,10);
+  while(added<abs){d.setDate(d.getDate()+sign);const ds=localDateStr(d);if(isWorkDay(ds))added++;}
+  return localDateStr(d);
 }
 // Sorted helpers for dropdowns
 function sortedTeams(){return [...TEAMS].sort((a,b)=>a.localeCompare(b));}
@@ -1458,16 +1458,16 @@ function snapToWeekdayFwd(ds){
   return localDateStr(d);
 }
 function addWeekDays(dateStr,n){
-  // Always skip Sat/Sun (+ holidays if Work Days mode on)
-  let d=new Date(dateStr);let added=0;
+  // Always skip Sat/Sun (+ holidays if Work Days mode on) — use local date to avoid UTC offset day-shift
+  let d=parseLocalDate(dateStr);let added=0;
   const sign=n<0?-1:1;const abs=Math.abs(n);
   while(added<abs){
     d.setDate(d.getDate()+sign);
-    const ds=d.toISOString().slice(0,10);
+    const ds=localDateStr(d);
     const dow=d.getDay();
     if(dow!==0&&dow!==6&&(!useWorkDays()||!isHoliday(ds)))added++;
   }
-  return d.toISOString().slice(0,10);
+  return localDateStr(d);
 }
 function smartAddDays(dateStr,n){
   // Always skip weekends; also skip holidays if Work Days mode is on
