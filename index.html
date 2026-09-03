@@ -1519,11 +1519,6 @@ function autoSchedule(mode){
     if(!latestDepEnd)return;
     const minStart=smartAddDays(latestDepEnd,1);
     const dur=smartDaysBetween(t.start,t.end);
-    const snapToWeekday=(ds)=>{
-      const p=ds.split('-');let d=new Date(+p[0],+p[1]-1,+p[2]);
-      while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
-      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    };
     if(mode==='asap'){
       t.start=minStart;
       t.end=t.milestone?t.start:(dur>1?smartAddDays(t.start,dur-1):t.start);
@@ -1533,8 +1528,8 @@ function autoSchedule(mode){
         t.end=t.milestone?t.start:(dur>1?smartAddDays(t.start,dur-1):t.start);
       }
     }
-    // Always ensure milestones land on weekdays
-    if(t.milestone){t.start=snapToWeekday(t.start);t.end=t.start;}
+    // Always ensure milestones land on workdays (weekends + holidays)
+    if(t.milestone){t.start=snapToWeekdayFwd(t.start);t.end=t.start;}
   });
   tasks.forEach(t=>{const s=state.tasks.find(x=>x.id===t.id);if(s){s.start=t.start;s.end=t.end;}});
 }
@@ -3466,11 +3461,13 @@ document.addEventListener('mousemove',e=>{
   if(daysDelta===0)return;
   const t=state.tasks.find(x=>x.id===dragState.taskId);if(!t)return;
   if(dragState.type==='move'){
-    t.start=addDays(dragState.origStart,daysDelta);
-    t.end=addDays(dragState.origEnd,daysDelta);
+    const rawStart=addDays(dragState.origStart,daysDelta);
+    const dur=smartDaysBetween(t.start,t.end);
+    t.start=snapToWeekdayFwd(rawStart);
+    t.end=t.milestone?t.start:snapToWeekdayBack(smartAddDays(t.start,dur-1));
   } else {
     const newEnd=addDays(dragState.origEnd,daysDelta);
-    if(new Date(newEnd)>new Date(t.start))t.end=newEnd;
+    if(new Date(newEnd)>new Date(t.start))t.end=snapToWeekdayBack(newEnd);
   }
   renderTable();renderGantt();
 });
