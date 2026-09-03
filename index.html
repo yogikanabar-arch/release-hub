@@ -1509,15 +1509,16 @@ function autoSchedule(mode){
   const sortedIds=topoSort(tasks);
   sortedIds.forEach(id=>{
     const t=taskMap[id];if(!t||!Array.isArray(t.deps)||!t.deps.length)return;
-    let latestDepEnd=null;
+    let latestDepEnd=null;let latestDepIsMilestone=false;
     t.deps.forEach(depId=>{
       // skip parent dep — parent dates are computed from children
       if(t.parentId&&t.parentId===depId)return;
       const dep=taskMap[depId];if(!dep)return;
-      if(!latestDepEnd||dep.end>latestDepEnd)latestDepEnd=dep.end;
+      if(!latestDepEnd||dep.end>latestDepEnd){latestDepEnd=dep.end;latestDepIsMilestone=!!(dep.milestone);}
     });
     if(!latestDepEnd)return;
-    const minStart=smartAddDays(latestDepEnd,1);
+    // Milestones are instantaneous — dependent tasks start on the milestone date, not the day after
+    const minStart=latestDepIsMilestone?snapToWeekdayFwd(latestDepEnd):smartAddDays(latestDepEnd,1);
     const dur=smartDaysBetween(t.start,t.end);
     if(mode==='asap'){
       t.start=minStart;

@@ -1,6 +1,6 @@
 {
   "name": "release-hub",
-  "version": "1.5.21",
+  "version": "1.5.22",
   "description": "May Mobility Release Hub — TPM release management dashboard",
   "main": "main.js",
   "author": "May Mobility TPM Team",
