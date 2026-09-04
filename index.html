@@ -3220,13 +3220,14 @@ function renderGantt(){
     if(t.milestone){
       const mx=dateToX(t.start,min)+pxPerDay/2,sz=9;
       const isDone=t.progress===100;
+      const mColor=t.color||(ph?ph.color:'#8b5cf6');
       const pts=mx+','+( cy-sz)+' '+(mx+sz)+','+cy+' '+mx+','+(cy+sz)+' '+(mx-sz)+','+cy;
-      mk('polygon',{points:pts,fill:isDone?'#22c55e':(isCrit&&showCP?'#ef4444':'#8b5cf6'),opacity:'0.9'},bG);
+      mk('polygon',{points:pts,fill:isDone?'#22c55e':(isCrit&&showCP?'#ef4444':mColor),opacity:'0.9'},bG);
       if(isDone)tx('✓',mx,cy+4,{fill:'#fff','font-size':'10','text-anchor':'middle','font-family':ff},bG);
       tx(t.wbs+' '+t.name,mx+sz+5,cy+4,{fill:gcMuted,'font-size':'10','font-family':ff},bG);
       // Date label under diamond
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
-      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:'#8b5cf6','font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
+      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
     } else {
       const bx=dateToX(t.start,min);
       const bw=Math.max(6,dateToX(t.end,min)-bx+pxPerDay);
