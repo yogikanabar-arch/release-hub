@@ -6,6 +6,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
 /* ── THEME ── */
 :root{
@@ -477,6 +478,7 @@ select option{background:var(--surface)}
         <label style="font-size:11px;color:#22c55e;font-weight:600" title="Auto-push dependent tasks when dates change"><input type="checkbox" id="toggle-autoschedule" onchange="state.autoSchedule=this.checked;if(this.checked){save();renderTable();renderGantt();}"> ⚡ Auto-Schedule</label>
         <div class="spacer"></div>
         <button class="btn sm" onclick="downloadGanttPNG()" title="Save as PNG">📷 PNG</button>
+        <button class="btn sm" onclick="exportGanttToSlides(this)" title="Export as .pptx — open in Google Slides or PowerPoint">📊 Slides</button>
       </div>
       <!-- Sticky calendar header (horizontal scroll synced with content) -->
       <div id="gantt-hdr-wrap" style="overflow:hidden;flex-shrink:0;border-bottom:1px solid var(--border)">
@@ -3720,6 +3722,95 @@ document.addEventListener('click',e=>{
 });
 
 // Download PNG
+async function exportGanttToSlides(btn){
+  if(typeof PptxGenJS==='undefined'){alert('Slides library not loaded yet. Please wait a moment and try again.');return;}
+  const origLabel=btn?btn.textContent:'';
+  if(btn){btn.textContent='⏳ Building…';btn.disabled=true;}
+  try{
+    const hdrEl=document.getElementById('gantt-hdr');
+    const contentEl=document.getElementById('gantt');
+    const hdrW=+(hdrEl?.getAttribute('width')||0);
+    const hdrH=+(hdrEl?.getAttribute('height')||0);
+    const cW=+(contentEl?.getAttribute('width')||0);
+    const cH=+(contentEl?.getAttribute('height')||0);
+    const w=Math.max(hdrW,cW);
+    const totalH=hdrH+cH;
+    const scale=2;
+    const isLight=document.documentElement.dataset.theme==='light';
+    const bg=isLight?'#f8fafc':'#0f1117';
+
+    // Build combined canvas (same as PNG export)
+    const canvas=document.createElement('canvas');
+    canvas.width=w*scale;canvas.height=totalH*scale;
+    const ctx=canvas.getContext('2d');ctx.scale(scale,scale);
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,totalH);
+
+    const drawSvg=(svgEl,offsetY)=>new Promise(resolve=>{
+      if(!svgEl){resolve();return;}
+      const data=new XMLSerializer().serializeToString(svgEl);
+      const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const img=new Image();
+      img.onload=()=>{ctx.drawImage(img,0,offsetY);URL.revokeObjectURL(url);resolve();};
+      img.onerror=()=>{URL.revokeObjectURL(url);resolve();};
+      img.src=url;
+    });
+
+    await drawSvg(hdrEl,0);
+    await drawSvg(contentEl,hdrH);
+
+    // Title label
+    ctx.font='bold 12px Inter,system-ui,sans-serif';
+    ctx.fillStyle=isLight?'#1e293b':'#e2e8f0';
+    ctx.fillText((activeRelease()?.name||'')+(activeRelease()?.codeName?' · '+activeRelease().codeName:''),8,hdrH-4);
+
+    // Convert canvas to base64 PNG
+    const imgData=canvas.toDataURL('image/png');
+
+    // PPTX — widescreen 16:9
+    const pptx=new PptxGenJS();
+    pptx.layout='LAYOUT_WIDE'; // 13.33" x 7.5"
+    pptx.title=(activeRelease()?.name||'Gantt')+' — Gantt Schedule';
+    pptx.author='May Mobility TPM';
+
+    const slide=pptx.addSlide();
+
+    // Dark/light background
+    slide.background={color:isLight?'F8FAFC':'0F1117'};
+
+    // Title text
+    const rel=activeRelease();
+    const titleStr=(rel?.name||'Gantt Schedule')+(rel?.codeName?' · '+rel.codeName:'');
+    const subtitleStr='Gantt Schedule · Exported '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    slide.addText(titleStr,{x:0.3,y:0.1,w:12.7,h:0.35,fontSize:16,bold:true,color:isLight?'1E293B':'E2E8F0',fontFace:'Calibri'});
+    slide.addText(subtitleStr,{x:0.3,y:0.42,w:12.7,h:0.22,fontSize:10,color:isLight?'64748B':'94A3B8',fontFace:'Calibri'});
+
+    // Gantt image — fill the rest of the slide
+    const slideW=13.33,imgAreaH=6.6,imgY=0.7;
+    const imgAspect=canvas.width/canvas.height;
+    const fitW=Math.min(slideW-0.6,imgAreaH*imgAspect);
+    const fitH=fitW/imgAspect;
+    const imgX=(slideW-fitW)/2;
+    slide.addImage({data:imgData,x:imgX,y:imgY,w:fitW,h:fitH});
+
+    // May Mobility footer
+    slide.addText('May Mobility · Release Hub',{x:0.3,y:7.25,w:12.7,h:0.2,fontSize:8,color:isLight?'94A3B8':'475569',fontFace:'Calibri',align:'right'});
+
+    const fileName='gantt-'+(rel?.name||'chart').replace(/\s+/g,'-')+'_'+tsName()+'.pptx';
+    if(typeof dl==='function'){
+      // Electron — write via main process
+      const buf=await pptx.write({outputType:'arraybuffer'});
+      dl(buf,fileName,'application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    } else {
+      await pptx.writeFile({fileName});
+    }
+  } catch(e){
+    alert('Slides export failed: '+e.message);
+  } finally {
+    if(btn){btn.textContent=origLabel;btn.disabled=false;}
+  }
+}
+
 function downloadGanttPNG(){
   const hdrEl=document.getElementById('gantt-hdr');
   const contentEl=document.getElementById('gantt');
