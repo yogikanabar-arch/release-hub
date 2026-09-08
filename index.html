@@ -3076,7 +3076,10 @@ function renderGantt(){
   if(ft&&ft.options.length<=1){TEAMS.forEach(tm=>{const o=document.createElement('option');o.value=tm;o.textContent=tm;ft.appendChild(o);});}
 
   if(!tasks.length){svg.innerHTML='';return;}
-  const allDates=visibleTasks.flatMap(t=>[t.start,t.end]).filter(Boolean).sort();
+  // Include release milestones (cut, deploy) in the date range so those lines always show
+  const rel=activeRelease();
+  const relDates=[rel?.releaseDate,rel?.deploymentDate,rel?.deployWindowEnd].filter(Boolean);
+  const allDates=[...visibleTasks.flatMap(t=>[t.start,t.end]),...relDates].filter(Boolean).sort();
   if(!allDates.length){svg.innerHTML='';return;}
   const minD=parseLocalDate(allDates[0]);minD.setDate(minD.getDate()-3);
   const maxD=parseLocalDate(allDates[allDates.length-1]);maxD.setDate(maxD.getDate()+7);
@@ -3371,7 +3374,6 @@ function renderGantt(){
     const tx2=dateToX(today,min)+pxPerDay/2;
     if(tx2>0&&tx2<totalW){mk('line',{x1:tx2,y1:0,x2:tx2,y2:contentH,stroke:'#f59e0b','stroke-width':2,'stroke-dasharray':'5,3',opacity:.8});tx('TODAY',tx2+3,10,{fill:'#f59e0b','font-size':'9','font-weight':'700','font-family':ff});}
   }
-  const rel=activeRelease();
   if(rel&&rel.releaseDate){
     const rx=dateToX(rel.releaseDate,min)+pxPerDay/2;
     if(rx>0&&rx<totalW){mk('line',{x1:rx,y1:0,x2:rx,y2:contentH,stroke:'#22c55e','stroke-width':2,opacity:.7});tx('✂️ CUT',rx+3,22,{fill:'#22c55e','font-size':'9','font-weight':'700','font-family':ff});}
