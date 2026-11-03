@@ -3288,7 +3288,7 @@ function renderGantt(){
       if(_lp==='left'){_lx=mx-sz-5;_lta='end';}
       else if(_lp==='top'){_lx=mx;_ly=cy-sz-18;_lta='middle';}
       else if(_lp==='bottom'){_lx=mx;_ly=cy+sz+22;_lta='middle';}
-      tx(t.wbs+' '+t.name,_lx,_ly,{fill:gcMuted,'font-size':'10','text-anchor':_lta,'font-family':ff},bG);
+      tx(t.wbs+' '+t.name,_lx,_ly,{fill:mColor,'font-size':'10','text-anchor':_lta,'font-family':ff},bG);
       // Date label under shape
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
       tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
