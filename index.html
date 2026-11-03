@@ -3306,12 +3306,13 @@ function renderGantt(){
       const fillColor=isDone?'#22c55e':(isCrit&&showCP?'#ef4444':mColor);
       const mShape=t.markerShape||'diamond';
       if(t.markerImage){
-        // Circle-clipped image marker
+        // Circle-clipped image marker — larger radius
+        const imgR=16;
         const imgClipId='imgclip-'+t.id;
         const icp=mk('clipPath',{id:imgClipId},defs);
-        mk('circle',{cx:mx,cy,r:sz},icp);
-        mk('image',{href:t.markerImage,x:mx-sz,y:cy-sz,width:sz*2,height:sz*2,'clip-path':'url(#'+imgClipId+')','preserveAspectRatio':'xMidYMid slice'},bG);
-        mk('circle',{cx:mx,cy,r:sz,fill:'none',stroke:mColor,'stroke-width':1.5,opacity:'0.8'},bG);
+        mk('circle',{cx:mx,cy,r:imgR},icp);
+        mk('image',{href:t.markerImage,x:mx-imgR,y:cy-imgR,width:imgR*2,height:imgR*2,'clip-path':'url(#'+imgClipId+')','preserveAspectRatio':'xMidYMid slice'},bG);
+        mk('circle',{cx:mx,cy,r:imgR,fill:'none',stroke:mColor,'stroke-width':2,opacity:'0.9'},bG);
       } else if(mShape==='circle'){
         mk('circle',{cx:mx,cy,r:sz,fill:fillColor,opacity:'0.9'},bG);
       } else if(mShape==='triangle'){
@@ -3334,22 +3335,25 @@ function renderGantt(){
       if(isDone&&mShape!=='flag'&&!t.markerImage)tx('✓',mx,cy+4,{fill:'#fff','font-size':'10','text-anchor':'middle','font-family':ff},bG);
       // Milestone label — position driven by milestoneLabelPos
       const _lp=t.milestoneLabelPos||'right';
-      let _lx=mx+sz+5,_ly=cy+4,_lta='start';
-      if(_lp==='left'){_lx=mx-sz-5;_lta='end';}
-      else if(_lp==='top'){_lx=mx;_ly=cy-sz-18;_lta='middle';}
-      else if(_lp==='bottom'){_lx=mx;_ly=cy+sz+22;_lta='middle';}
+      const _szEff=t.markerImage?16:sz; // use larger radius for image markers
+      let _lx=mx+_szEff+5,_ly=cy+4,_lta='start';
+      if(_lp==='left'){_lx=mx-_szEff-5;_lta='end';}
+      else if(_lp==='top'){_lx=mx;_ly=cy-_szEff-8;_lta='middle';}
+      else if(_lp==='bottom'){_lx=mx;_ly=cy+_szEff+14;_lta='middle';}
       tx(t.wbs+' '+t.name,_lx,_ly,{fill:mColor,'font-size':'10','text-anchor':_lta,'font-family':ff},bG);
       // Date label under shape
+      const _szD=t.markerImage?16:sz;
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
-      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
+      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+_szD+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
       // Gantt annotation note — position driven by ganttNotePos
       if(t.ganttNote){
         const _nc=t.ganttNoteColor||gcMuted;
         const _pos=t.ganttNotePos||'top';
-        let _nx=mx,_ny=cy-sz-6,_ta='middle';
-        if(_pos==='bottom'){_nx=mx;_ny=cy+sz+22;_ta='middle';}
-        else if(_pos==='left'){_nx=mx-sz-5;_ny=cy+3.5;_ta='end';}
-        else if(_pos==='right'){_nx=mx+sz+5;_ny=cy+3.5;_ta='start';}
+        const _szA=t.markerImage?16:sz;
+        let _nx=mx,_ny=cy-_szA-6,_ta='middle';
+        if(_pos==='bottom'){_nx=mx;_ny=cy+_szA+22;_ta='middle';}
+        else if(_pos==='left'){_nx=mx-_szA-5;_ny=cy+3.5;_ta='end';}
+        else if(_pos==='right'){_nx=mx+_szA+5;_ny=cy+3.5;_ta='start';}
         tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':'9','text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
     } else {
