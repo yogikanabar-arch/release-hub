@@ -471,6 +471,7 @@ select option{background:var(--surface)}
         <button class="btn sm" onclick="resetScheduleFilters()" title="Reset all filters to default">↺ Reset</button>
         <label style="font-size:11px;color:var(--muted)"><input type="checkbox" id="show-deps" checked onchange="renderGantt()"> Deps</label>
         <label style="font-size:11px;color:var(--muted)"><input type="checkbox" id="show-today" checked onchange="renderGantt()"> Today</label>
+        <label style="font-size:11px;color:var(--muted)" title="Highlight weekends and holidays on the chart"><input type="checkbox" id="show-shading" checked onchange="renderGantt();document.getElementById('gantt-legend').style.display=this.checked?'flex':'none'"> 🗓 Shading</label>
         <label style="font-size:11px;color:var(--critical);font-weight:600"><input type="checkbox" id="show-cp" onchange="renderGantt();renderTable()"> Critical Path</label>
         <label style="font-size:11px;color:var(--muted)"><input type="checkbox" id="show-owners" onchange="renderGantt()"> 👤 Owners</label>
         <div style="width:1px;height:16px;background:var(--border);margin:0 2px"></div>
@@ -479,6 +480,14 @@ select option{background:var(--surface)}
         <div class="spacer"></div>
         <button class="btn sm" onclick="downloadGanttPNG()" title="Save as PNG">📷 PNG</button>
         <button class="btn sm" onclick="exportGanttToSlides(this)" title="Export as .pptx — open in Google Slides or PowerPoint">📊 Slides</button>
+      </div>
+      <!-- Shading legend -->
+      <div id="gantt-legend" style="display:flex;align-items:center;gap:14px;padding:4px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase">Legend</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:rgba(100,100,100,.18);border:1px solid rgba(100,100,100,.2)"></span> Weekend</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="display:inline-block;width:14px;height:14px;border-radius:2px;background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.25)"></span> Public Holiday</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="display:inline-block;width:14px;height:3px;border-radius:1px;background:#3b82f6"></span> Today</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="display:inline-block;width:14px;height:3px;border-radius:1px;background:#22c55e"></span> ✂️ Cut / 🚀 Deploy</span>
       </div>
       <!-- Sticky calendar header (horizontal scroll synced with content) -->
       <div id="gantt-hdr-wrap" style="overflow:hidden;flex-shrink:0;border-bottom:1px solid var(--border)">
@@ -3223,6 +3232,7 @@ function renderGantt(){
   if(H)mk('rect',{x:0,y:0,width:totalW,height:HDR_H,fill:gcHdr},H); // header bg
 
   // weekend / holiday grid — in both header and content SVGs
+  const showShading=document.getElementById('show-shading')?.checked!==false;
   let cur=parseLocalDate(min);
   while(cur<=maxD){
     const x=dateToX(localDateStr(cur),min);
@@ -3230,13 +3240,19 @@ function renderGantt(){
     const ds=localDateStr(cur);
     const isWeekend=dow===0||dow===6;
     const isHol=isHoliday(ds);
-    if(isWeekend){
-      mk('rect',{x,y:0,width:pxPerDay,height:contentH,fill:isLight?'rgba(0,0,0,.04)':'rgba(255,255,255,.018)'});
-      if(H)mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(0,0,0,.04)':'rgba(255,255,255,.018)'},H);
+    if(showShading&&isWeekend){
+      mk('rect',{x,y:0,width:pxPerDay,height:contentH,fill:isLight?'rgba(0,0,0,.06)':'rgba(255,255,255,.035)'});
+      if(H)mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(0,0,0,.06)':'rgba(255,255,255,.035)'},H);
     }
-    if(isHol&&!isWeekend){
-      mk('rect',{x,y:0,width:pxPerDay,height:contentH,fill:isLight?'rgba(239,68,68,.07)':'rgba(239,68,68,.12)'});
-      if(H)mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(239,68,68,.07)':'rgba(239,68,68,.12)'},H);
+    if(showShading&&isHol&&!isWeekend){
+      mk('rect',{x,y:0,width:pxPerDay,height:contentH,fill:isLight?'rgba(239,68,68,.13)':'rgba(239,68,68,.18)'});
+      if(H)mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(239,68,68,.13)':'rgba(239,68,68,.18)'},H);
+    }
+    // Label holiday name in header when shading is on
+    if(showShading&&isHol&&H){
+      const hname=(getHolidays().find(h=>h.date===ds)||{}).name||'Holiday';
+      const htx=mk('text',{x:x+2,y:HDR_H-4,fill:'#ef4444','font-size':'7','font-family':ff,'pointer-events':'none','opacity':'0.85'},H);
+      htx.textContent=hname.length>10?hname.slice(0,9)+'…':hname;
     }
     if(viewMode!=='months'&&dow===1)mk('line',{x1:x,y1:0,x2:x,y2:contentH,stroke:gcGrid,'stroke-width':1});
     cur.setDate(cur.getDate()+1);
