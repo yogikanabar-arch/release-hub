@@ -3273,10 +3273,7 @@ function renderGantt(){
       // Gantt annotation note above milestone marker
       if(t.ganttNote){
         const _note=t.ganttNote.length>22?t.ganttNote.slice(0,21)+'…':t.ganttNote;
-        const _nw=_note.length*5.5+10;
-        mk('rect',{x:mx-_nw/2,y:cy-sz-22,width:_nw,height:13,rx:3,fill:mColor,opacity:'0.88'},bG);
-        mk('line',{x1:mx,y1:cy-sz-9,x2:mx,y2:cy-sz,stroke:mColor,'stroke-width':1,opacity:'0.6'},bG);
-        tx(_note,mx,cy-sz-12,{fill:'#fff','font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
+        tx(_note,mx,cy-sz-6,{fill:gcMuted,'font-size':'9','text-anchor':'middle','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
     } else {
       const bx=dateToX(t.start,min);
@@ -3302,11 +3299,7 @@ function renderGantt(){
       // Gantt annotation note above bar
       if(t.ganttNote){
         const _note=t.ganttNote.length>24?t.ganttNote.slice(0,23)+'…':t.ganttNote;
-        const _nw=_note.length*5.2+10;
-        const _ncx=bx+Math.min(bw/2,_nw/2+2);
-        mk('rect',{x:_ncx-_nw/2,y:barY-14,width:_nw,height:12,rx:3,fill:taskColor,opacity:'0.88'},bG);
-        mk('line',{x1:_ncx,y1:barY-2,x2:_ncx,y2:barY,stroke:taskColor,'stroke-width':1,opacity:'0.6'},bG);
-        tx(_note,_ncx,barY-5,{fill:'#fff','font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
+        tx(_note,bx+4,barY-4,{fill:gcMuted,'font-size':'9','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
       // Owner avatar (shown when "Owners" checkbox is on)
       if(showOwners&&t.owner){
