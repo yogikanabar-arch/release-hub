@@ -510,7 +510,7 @@ select option{background:var(--surface)}
         </div>
         <div class="field"><label>Notes</label><textarea id="d-notes" oninput="udField('notes',this.value)"></textarea></div>
         <div class="field" style="display:flex;gap:10px;align-items:center">
-          <label style="display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-size:12px"><input type="checkbox" id="d-milestone" onchange="udField('milestone',this.checked);const _w=document.getElementById('d-marker-shape-wrap');if(_w)_w.style.display=this.checked?'flex':'none'"> Milestone</label>
+          <label style="display:flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-size:12px"><input type="checkbox" id="d-milestone" onchange="udField('milestone',this.checked);['d-marker-shape-wrap','d-ms-label-pos-wrap'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=this.checked?'flex':'none'})"> Milestone</label>
         </div>
         <div class="field" style="display:flex;align-items:center;gap:8px">
           <label style="text-transform:none;letter-spacing:0;font-size:12px;margin:0">Bar color</label>
@@ -523,7 +523,13 @@ select option{background:var(--surface)}
             <button id="d-gnp-left" onclick="udField('ganttNotePos','left');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='left'?'var(--accent)':'var(--surface2)';b.style.color=p==='left'?'#fff':'var(--text)'}})" title="Left" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">←</button>
             <button id="d-gnp-right" onclick="udField('ganttNotePos','right');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='right'?'var(--accent)':'var(--surface2)';b.style.color=p==='right'?'#fff':'var(--text)'}})" title="Right" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">→</button>
           </div></div>
-        <div class="field" id="d-marker-shape-wrap" style="display:flex;align-items:center;gap:8px">
+        <div class="field" id="d-ms-label-pos-wrap" style="display:none"><label>Label position</label><div style="display:flex;gap:4px;margin-top:4px">
+            <button id="d-mlp-top" onclick="udField('milestoneLabelPos','top');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-mlp-'+p);if(b){b.style.background=p==='top'?'var(--accent)':'var(--surface2)';b.style.color=p==='top'?'#fff':'var(--text)'}})" title="Above" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">↑</button>
+            <button id="d-mlp-bottom" onclick="udField('milestoneLabelPos','bottom');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-mlp-'+p);if(b){b.style.background=p==='bottom'?'var(--accent)':'var(--surface2)';b.style.color=p==='bottom'?'#fff':'var(--text)'}})" title="Below" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">↓</button>
+            <button id="d-mlp-left" onclick="udField('milestoneLabelPos','left');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-mlp-'+p);if(b){b.style.background=p==='left'?'var(--accent)':'var(--surface2)';b.style.color=p==='left'?'#fff':'var(--text)'}})" title="Left" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">←</button>
+            <button id="d-mlp-right" onclick="udField('milestoneLabelPos','right');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-mlp-'+p);if(b){b.style.background=p==='right'?'var(--accent)':'var(--surface2)';b.style.color=p==='right'?'#fff':'var(--text)'}})" title="Right" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">→</button>
+          </div></div>
+        <div class="field" id="d-marker-shape-wrap" style="display:none;align-items:center;gap:8px">
           <label style="text-transform:none;letter-spacing:0;font-size:12px;margin:0">Marker shape</label>
           <select id="d-marker-shape" onchange="udField('markerShape',this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:5px;font-size:12px">
             <option value="">♦ Diamond</option>
@@ -2887,9 +2893,11 @@ function selectTask(id){
   const _gnp=t.ganttNotePos||'top';
   ['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p===_gnp?'var(--accent)':'var(--surface2)';b.style.color=p===_gnp?'#fff':'var(--text)';}});
   const _msEl=document.getElementById('d-marker-shape');if(_msEl)_msEl.value=t.markerShape||'';
-  // Marker shape is only meaningful for milestones — show/hide the row
-  const _mswrap=document.getElementById('d-marker-shape-wrap');
-  if(_mswrap)_mswrap.style.display=t.milestone?'flex':'none';
+  // Milestone-only fields — show/hide
+  ['d-marker-shape-wrap','d-ms-label-pos-wrap'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=t.milestone?'flex':'none';});
+  // Highlight active label position button
+  const _mlp=t.milestoneLabelPos||'right';
+  ['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-mlp-'+p);if(b){b.style.background=p===_mlp?'var(--accent)':'var(--surface2)';b.style.color=p===_mlp?'#fff':'var(--text)';}});
   // Phase select
   document.getElementById('d-phase').innerHTML=PHASES.map(p=>'<option value="'+p.id+'"'+(p.id===t.phase?' selected':'')+'>'+p.name+'</option>').join('');
   // Team select
@@ -3274,7 +3282,13 @@ function renderGantt(){
         mk('polygon',{points:pts,fill:fillColor,opacity:'0.9'},bG);
       }
       if(isDone&&mShape!=='flag')tx('✓',mx,cy+4,{fill:'#fff','font-size':'10','text-anchor':'middle','font-family':ff},bG);
-      tx(t.wbs+' '+t.name,mx+sz+5,cy+4,{fill:gcMuted,'font-size':'10','font-family':ff},bG);
+      // Milestone label — position driven by milestoneLabelPos
+      const _lp=t.milestoneLabelPos||'right';
+      let _lx=mx+sz+5,_ly=cy+4,_lta='start';
+      if(_lp==='left'){_lx=mx-sz-5;_lta='end';}
+      else if(_lp==='top'){_lx=mx;_ly=cy-sz-18;_lta='middle';}
+      else if(_lp==='bottom'){_lx=mx;_ly=cy+sz+22;_lta='middle';}
+      tx(t.wbs+' '+t.name,_lx,_ly,{fill:gcMuted,'font-size':'10','text-anchor':_lta,'font-family':ff},bG);
       // Date label under shape
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
       tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
