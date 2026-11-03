@@ -3246,13 +3246,11 @@ function renderGantt(){
     }
     if(showShading&&isHol&&!isWeekend){
       mk('rect',{x,y:0,width:pxPerDay,height:contentH,fill:isLight?'rgba(239,68,68,.13)':'rgba(239,68,68,.18)'});
-      if(H)mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(239,68,68,.13)':'rgba(239,68,68,.18)'},H);
-    }
-    // Label holiday name in header when shading is on
-    if(showShading&&isHol&&H){
-      const hname=(getHolidays().find(h=>h.date===ds)||{}).name||'Holiday';
-      const htx=mk('text',{x:x+2,y:HDR_H-4,fill:'#ef4444','font-size':'7','font-family':ff,'pointer-events':'none','opacity':'0.85'},H);
-      htx.textContent=hname.length>10?hname.slice(0,9)+'…':hname;
+      if(H){
+        const hname=(getHolidays().find(h=>h.date===ds)||{}).name||'Holiday';
+        const hr=mk('rect',{x,y:0,width:pxPerDay,height:HDR_H,fill:isLight?'rgba(239,68,68,.13)':'rgba(239,68,68,.18)'},H);
+        const ht=document.createElementNS('http://www.w3.org/2000/svg','title');ht.textContent=hname;hr.appendChild(ht);
+      }
     }
     if(viewMode!=='months'&&dow===1)mk('line',{x1:x,y1:0,x2:x,y2:contentH,stroke:gcGrid,'stroke-width':1});
     cur.setDate(cur.getDate()+1);
