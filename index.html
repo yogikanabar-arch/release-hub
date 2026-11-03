@@ -3142,7 +3142,7 @@ function renderGantt(){
   const contentH=rows.length*ROW_H+20;
   const totalH=HDR_H+contentH;
   // Content SVG (rows only, y starts at 0)
-  svg.setAttribute('width',totalW);svg.setAttribute('height',contentH);svg.innerHTML='';
+  svg.setAttribute('width',totalW);svg.setAttribute('height',contentH);svg.setAttribute('overflow','visible');svg.innerHTML='';
   // Header SVG (calendar only)
   const hdrSvg=document.getElementById('gantt-hdr');
   if(hdrSvg){hdrSvg.setAttribute('width',totalW);hdrSvg.setAttribute('height',HDR_H);hdrSvg.innerHTML='';}
@@ -3273,9 +3273,8 @@ function renderGantt(){
       tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
       // Gantt annotation note above milestone marker
       if(t.ganttNote){
-        const _note=t.ganttNote.length>22?t.ganttNote.slice(0,21)+'…':t.ganttNote;
         const _nc=t.ganttNoteColor||gcMuted;
-        tx(_note,mx,cy-sz-6,{fill:_nc,'font-size':'9','text-anchor':'middle','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        tx(t.ganttNote,mx,cy-sz-6,{fill:_nc,'font-size':'9','text-anchor':'middle','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
     } else {
       const bx=dateToX(t.start,min);
@@ -3300,9 +3299,8 @@ function renderGantt(){
       tx(t.wbs+' '+t.name,bx+5,barY+13,{fill:isLight?'#1e293b':'#e2e8f0','font-size':'10','font-family':ff,'clip-path':'url(#'+clipId+')'},bG);
       // Gantt annotation note above bar
       if(t.ganttNote){
-        const _note=t.ganttNote.length>24?t.ganttNote.slice(0,23)+'…':t.ganttNote;
         const _nc=t.ganttNoteColor||gcMuted;
-        tx(_note,bx+4,barY-4,{fill:_nc,'font-size':'9','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        tx(t.ganttNote,bx+4,barY-4,{fill:_nc,'font-size':'9','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
       // Owner avatar (shown when "Owners" checkbox is on)
       if(showOwners&&t.owner){
