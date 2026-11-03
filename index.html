@@ -517,7 +517,12 @@ select option{background:var(--surface)}
           <input type="color" id="d-color" oninput="udField('color',this.value)" title="Override bar color" style="width:32px;height:22px;padding:1px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--surface2)">
           <button onclick="udField('color','');document.getElementById('d-color').value='#6366f1'" title="Reset to phase color" style="font-size:10px;padding:2px 7px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer">Reset</button>
         </div>
-        <div class="field"><label>Gantt Annotation</label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="d-gantt-note" maxlength="40" placeholder="Short note shown on the chart…" oninput="udField('ganttNote',this.value)" style="font-size:12px;flex:1"><input type="color" id="d-gantt-note-color" value="#64748b" oninput="udField('ganttNoteColor',this.value)" title="Annotation text color" style="width:28px;height:22px;padding:1px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--surface2);flex-shrink:0"></div></div>
+        <div class="field"><label>Gantt Annotation</label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="d-gantt-note" maxlength="40" placeholder="Short note shown on the chart…" oninput="udField('ganttNote',this.value)" style="font-size:12px;flex:1"><input type="color" id="d-gantt-note-color" value="#64748b" oninput="udField('ganttNoteColor',this.value)" title="Annotation text color" style="width:28px;height:22px;padding:1px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--surface2);flex-shrink:0"></div><div style="display:flex;gap:4px;margin-top:5px">
+            <button id="d-gnp-top" onclick="udField('ganttNotePos','top');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='top'?'var(--accent)':'var(--surface2)';b.style.color=p==='top'?'#fff':'var(--text)'}})" title="Above" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">↑</button>
+            <button id="d-gnp-bottom" onclick="udField('ganttNotePos','bottom');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='bottom'?'var(--accent)':'var(--surface2)';b.style.color=p==='bottom'?'#fff':'var(--text)'}})" title="Below" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">↓</button>
+            <button id="d-gnp-left" onclick="udField('ganttNotePos','left');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='left'?'var(--accent)':'var(--surface2)';b.style.color=p==='left'?'#fff':'var(--text)'}})" title="Left" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">←</button>
+            <button id="d-gnp-right" onclick="udField('ganttNotePos','right');['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p==='right'?'var(--accent)':'var(--surface2)';b.style.color=p==='right'?'#fff':'var(--text)'}})" title="Right" style="flex:1;font-size:11px;padding:2px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">→</button>
+          </div></div>
         <div class="field" id="d-marker-shape-wrap" style="display:flex;align-items:center;gap:8px">
           <label style="text-transform:none;letter-spacing:0;font-size:12px;margin:0">Marker shape</label>
           <select id="d-marker-shape" onchange="udField('markerShape',this.value)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:5px;font-size:12px">
@@ -2879,6 +2884,8 @@ function selectTask(id){
   // Gantt annotation + marker shape
   document.getElementById('d-gantt-note').value=t.ganttNote||'';
   document.getElementById('d-gantt-note-color').value=t.ganttNoteColor||'#64748b';
+  const _gnp=t.ganttNotePos||'top';
+  ['top','bottom','left','right'].forEach(p=>{const b=document.getElementById('d-gnp-'+p);if(b){b.style.background=p===_gnp?'var(--accent)':'var(--surface2)';b.style.color=p===_gnp?'#fff':'var(--text)';}});
   const _msEl=document.getElementById('d-marker-shape');if(_msEl)_msEl.value=t.markerShape||'';
   // Marker shape is only meaningful for milestones — show/hide the row
   const _mswrap=document.getElementById('d-marker-shape-wrap');
@@ -3271,10 +3278,15 @@ function renderGantt(){
       // Date label under shape
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
       tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+sz+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
-      // Gantt annotation note above milestone marker
+      // Gantt annotation note — position driven by ganttNotePos
       if(t.ganttNote){
         const _nc=t.ganttNoteColor||gcMuted;
-        tx(t.ganttNote,mx,cy-sz-6,{fill:_nc,'font-size':'9','text-anchor':'middle','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        const _pos=t.ganttNotePos||'top';
+        let _nx=mx,_ny=cy-sz-6,_ta='middle';
+        if(_pos==='bottom'){_nx=mx;_ny=cy+sz+22;_ta='middle';}
+        else if(_pos==='left'){_nx=mx-sz-5;_ny=cy+3.5;_ta='end';}
+        else if(_pos==='right'){_nx=mx+sz+5;_ny=cy+3.5;_ta='start';}
+        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':'9','text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
     } else {
       const bx=dateToX(t.start,min);
@@ -3297,10 +3309,16 @@ function renderGantt(){
       barEl.addEventListener('mouseleave',()=>ttG.setAttribute('opacity','0'));
       if(t.progress>0){const pColor=t.progress===100?'#22c55e':isCrit&&showCP?'#ef4444':overdue?'#f59e0b':taskColor;mk('rect',{x:bx,y:barY,width:bw*t.progress/100,height:TASK_H,fill:pColor,opacity:'0.65','clip-path':'url(#'+clipId+')'},bG);}
       tx(t.wbs+' '+t.name,bx+5,barY+13,{fill:isLight?'#1e293b':'#e2e8f0','font-size':'10','font-family':ff,'clip-path':'url(#'+clipId+')'},bG);
-      // Gantt annotation note above bar
+      // Gantt annotation note — position driven by ganttNotePos
       if(t.ganttNote){
         const _nc=t.ganttNoteColor||gcMuted;
-        tx(t.ganttNote,bx+4,barY-4,{fill:_nc,'font-size':'9','font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        const _pos=t.ganttNotePos||'top';
+        let _nx,_ny,_ta='start';
+        if(_pos==='bottom'){_nx=bx+4;_ny=barY+TASK_H+10;}
+        else if(_pos==='left'){_nx=bx-4;_ny=cy+3.5;_ta='end';}
+        else if(_pos==='right'){_nx=bx+bw+38;_ny=cy+3.5;}
+        else{_nx=bx+4;_ny=barY-4;}// top (default)
+        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':'9','text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
       // Owner avatar (shown when "Owners" checkbox is on)
       if(showOwners&&t.owner){
