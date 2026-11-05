@@ -459,6 +459,9 @@ select option{background:var(--surface)}
         <button class="btn sm" onclick="zoomOut()">−</button>
         <button class="btn sm" onclick="zoomFit()">Fit</button>
         <div style="width:1px;height:16px;background:var(--border);margin:0 2px"></div>
+        <button class="btn sm" onclick="setGanttTextScale(ganttTextScale-0.1)" title="Smaller text">A−</button>
+        <button class="btn sm" onclick="setGanttTextScale(ganttTextScale+0.1)" title="Larger text">A+</button>
+        <div style="width:1px;height:16px;background:var(--border);margin:0 2px"></div>
         <div class="view-btn active" data-gb="phase" onclick="setGroupBy('phase')">By Phase</div>
         <div class="view-btn" data-gb="team" onclick="setGroupBy('team')">By Team</div>
         <select class="fsel" id="filter-team" onchange="renderTable();renderGantt()"><option value="">All Teams</option></select>
@@ -3111,6 +3114,8 @@ function toggleDepChip(el,taskId){
 //  GANTT
 // ══════════════════════════════════════════════
 let pxPerDay=22,viewMode='days',ganttGroupBy='phase';
+let ganttTextScale=parseFloat(localStorage.getItem('ganttTextScale')||'1');
+function setGanttTextScale(s){ganttTextScale=Math.max(0.75,Math.min(2.0,Math.round(s*10)/10));localStorage.setItem('ganttTextScale',ganttTextScale);renderGantt();}
 let dragState=null;
 
 function setViewMode(vm){
@@ -3173,7 +3178,8 @@ function renderGantt(){
   const min=minD.getFullYear()+'-'+String(minD.getMonth()+1).padStart(2,'0')+'-'+String(minD.getDate()).padStart(2,'0');
   const totalDays=(maxD-minD)/86400000;
   const totalW=Math.max(400,totalDays*pxPerDay);
-  const ROW_H=36,HDR_H=(viewMode==='months'||viewMode==='biweeks')?36:52,TASK_H=18;
+  const sc=ganttTextScale,fs=n=>String(Math.round(n*sc));
+  const ROW_H=Math.round(36*sc),HDR_H=Math.round(((viewMode==='months'||viewMode==='biweeks')?36:52)*sc),TASK_H=Math.round(18*sc);
   const isLight=document.documentElement.dataset.theme==='light';
 
   // Build row list
@@ -3263,7 +3269,7 @@ function renderGantt(){
     let mc=parseLocalDate(min);mc.setDate(1);
     while(mc<=maxD){
       const x=Math.max(0,dateToX(localDateStr(mc),min));
-      tx(mc.toLocaleDateString('en',{month:'short',year:'2-digit'}),x+4,15,{fill:gcMuted,'font-size':'11','font-weight':'600','font-family':ff},H);
+      tx(mc.toLocaleDateString('en',{month:'short',year:'2-digit'}),x+4,15,{fill:gcMuted,'font-size':fs(11),'font-weight':'600','font-family':ff},H);
       mk('line',{x1:x,y1:0,x2:x,y2:HDR_H,stroke:gcGrid,'stroke-width':1},H);
       mc.setMonth(mc.getMonth()+1);
     }
@@ -3273,17 +3279,17 @@ function renderGantt(){
     cur=parseLocalDate(min);
     while(cur<=maxD){
       const dow=cur.getDay();
-      if(dow===1){const wn=getWeekNum(cur);if(wn%2===1){const x=dateToX(localDateStr(cur),min);tx('W'+wn+'–'+(wn+1),x+pxPerDay*7,26,{fill:gcMuted,'font-size':'10','text-anchor':'middle','font-family':ff},H);mk('line',{x1:x,y1:0,x2:x,y2:HDR_H,stroke:gcGrid,'stroke-width':1},H);}}
+      if(dow===1){const wn=getWeekNum(cur);if(wn%2===1){const x=dateToX(localDateStr(cur),min);tx('W'+wn+'–'+(wn+1),x+pxPerDay*7,26,{fill:gcMuted,'font-size':fs(10),'text-anchor':'middle','font-family':ff},H);mk('line',{x1:x,y1:0,x2:x,y2:HDR_H,stroke:gcGrid,'stroke-width':1},H);}}
       cur.setDate(cur.getDate()+1);
     }
   } else if(H&&viewMode!=='months'){
     cur=parseLocalDate(min);
     while(cur<=maxD){
       const dow=cur.getDay();const x=dateToX(localDateStr(cur),min);
-      if(viewMode==='weeks'&&dow===1){const wn=getWeekNum(cur);tx('W'+wn,x+pxPerDay/2,32,{fill:gcMuted,'font-size':'10','text-anchor':'middle','font-family':ff},H);}
+      if(viewMode==='weeks'&&dow===1){const wn=getWeekNum(cur);tx('W'+wn,x+pxPerDay/2,32,{fill:gcMuted,'font-size':fs(10),'text-anchor':'middle','font-family':ff},H);}
       else if(viewMode==='days'){
-        tx(cur.getDate().toString(),x+pxPerDay/2,33,{fill:dow===0||dow===6?'#f59e0b':gcMuted,'font-size':'9','text-anchor':'middle','font-family':ff},H);
-        if(pxPerDay>=20){tx(['S','M','T','W','T','F','S'][dow],x+pxPerDay/2,44,{fill:gcMuted,'font-size':'8','text-anchor':'middle','font-family':ff},H);}
+        tx(cur.getDate().toString(),x+pxPerDay/2,33,{fill:dow===0||dow===6?'#f59e0b':gcMuted,'font-size':fs(9),'text-anchor':'middle','font-family':ff},H);
+        if(pxPerDay>=20){tx(['S','M','T','W','T','F','S'][dow],x+pxPerDay/2,44,{fill:gcMuted,'font-size':fs(8),'text-anchor':'middle','font-family':ff},H);}
       }
       cur.setDate(cur.getDate()+1);
     }
@@ -3298,7 +3304,7 @@ function renderGantt(){
     const y=i*ROW_H;
     if(row.isHdr){
       mk('rect',{x:0,y,width:totalW,height:ROW_H,fill:isLight?'rgba(0,0,0,.03)':'rgba(255,255,255,.025)'},bG);
-      tx(row.label.toUpperCase(),6,y+ROW_H/2+4,{fill:row.color,'font-size':'10','font-weight':'700','letter-spacing':'1','font-family':ff},bG);
+      tx(row.label.toUpperCase(),6,y+ROW_H/2+4,{fill:row.color,'font-size':fs(10),'font-weight':'700','letter-spacing':'1','font-family':ff},bG);
       // Swimlane left stripe
       mk('rect',{x:0,y,width:3,height:ROW_H,fill:row.color},bG);
       return;
@@ -3346,7 +3352,7 @@ function renderGantt(){
         const pts=mx+','+(cy-sz)+' '+(mx+sz)+','+cy+' '+mx+','+(cy+sz)+' '+(mx-sz)+','+cy;
         mk('polygon',{points:pts,fill:fillColor,opacity:'0.9'},bG);
       }
-      if(isDone&&mShape!=='flag'&&!t.markerImage)tx('✓',mx,cy+4,{fill:'#fff','font-size':'10','text-anchor':'middle','font-family':ff},bG);
+      if(isDone&&mShape!=='flag'&&!t.markerImage)tx('✓',mx,cy+4,{fill:'#fff','font-size':fs(10),'text-anchor':'middle','font-family':ff},bG);
       // Milestone label — position driven by milestoneLabelPos
       const _lp=t.milestoneLabelPos||'right';
       const _szEff=t.markerImage?16:sz; // use larger radius for image markers
@@ -3354,11 +3360,11 @@ function renderGantt(){
       if(_lp==='left'){_lx=mx-_szEff-5;_lta='end';}
       else if(_lp==='top'){_lx=mx;_ly=cy-_szEff-8;_lta='middle';}
       else if(_lp==='bottom'){_lx=mx;_ly=cy+_szEff+14;_lta='middle';}
-      tx(t.wbs+' '+t.name,_lx,_ly,{fill:mColor,'font-size':'10','text-anchor':_lta,'font-family':ff},bG);
+      tx(t.wbs+' '+t.name,_lx,_ly,{fill:mColor,'font-size':fs(10),'text-anchor':_lta,'font-family':ff},bG);
       // Date label under shape
       const _szD=t.markerImage?16:sz;
       const _mp=t.start.slice(0,10).split('-');const _md=new Date(+_mp[0],+_mp[1]-1,+_mp[2]);
-      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+_szD+10,{fill:mColor,'font-size':'8','text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
+      tx((_md.getMonth()+1)+'/'+String(_md.getDate()).padStart(2,'0'),mx,cy+_szD+10,{fill:mColor,'font-size':fs(8),'text-anchor':'middle','font-family':ff,'font-weight':'600','pointer-events':'none'},bG);
       // Gantt annotation note — position driven by ganttNotePos
       if(t.ganttNote){
         const _nc=t.ganttNoteColor||gcMuted;
@@ -3368,7 +3374,7 @@ function renderGantt(){
         if(_pos==='bottom'){_nx=mx;_ny=cy+_szA+22;_ta='middle';}
         else if(_pos==='left'){_nx=mx-_szA-5;_ny=cy+3.5;_ta='end';}
         else if(_pos==='right'){_nx=mx+_szA+5;_ny=cy+3.5;_ta='start';}
-        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':'9','text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':fs(9),'text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
     } else {
       const bx=dateToX(t.start,min);
@@ -3386,11 +3392,11 @@ function renderGantt(){
       const ttG=mk('g',{'pointer-events':'none',opacity:'0'},bG);
       const _ttW=Math.min(300,_ttip.length*6+16);
       mk('rect',{x:bx,y:barY-22,width:_ttW,height:18,rx:4,fill:'rgba(15,17,23,.92)',stroke:'#334155'},ttG);
-      tx(_ttip,bx+8,barY-9,{fill:'#e2e8f0','font-size':'10','font-family':ff},ttG);
+      tx(_ttip,bx+8,barY-9,{fill:'#e2e8f0','font-size':fs(10),'font-family':ff},ttG);
       barEl.addEventListener('mouseenter',()=>ttG.setAttribute('opacity','1'));
       barEl.addEventListener('mouseleave',()=>ttG.setAttribute('opacity','0'));
       if(t.progress>0){const pColor=t.progress===100?'#22c55e':isCrit&&showCP?'#ef4444':overdue?'#f59e0b':taskColor;mk('rect',{x:bx,y:barY,width:bw*t.progress/100,height:TASK_H,fill:pColor,opacity:'0.65','clip-path':'url(#'+clipId+')'},bG);}
-      tx(t.wbs+' '+t.name,bx+5,barY+13,{fill:isLight?'#1e293b':'#e2e8f0','font-size':'10','font-family':ff,'clip-path':'url(#'+clipId+')'},bG);
+      tx(t.wbs+' '+t.name,bx+5,barY+13,{fill:isLight?'#1e293b':'#e2e8f0','font-size':fs(10),'font-family':ff,'clip-path':'url(#'+clipId+')'},bG);
       // Gantt annotation note — position driven by ganttNotePos
       if(t.ganttNote){
         const _nc=t.ganttNoteColor||gcMuted;
@@ -3400,7 +3406,7 @@ function renderGantt(){
         else if(_pos==='left'){_nx=bx-4;_ny=cy+3.5;_ta='end';}
         else if(_pos==='right'){_nx=bx+bw+38;_ny=cy+3.5;}
         else{_nx=bx+4;_ny=barY-4;}// top (default)
-        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':'9','text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
+        tx(t.ganttNote,_nx,_ny,{fill:_nc,'font-size':fs(9),'text-anchor':_ta,'font-family':ff,'font-style':'italic','pointer-events':'none'},bG);
       }
       // Owner avatar (shown when "Owners" checkbox is on)
       if(showOwners&&t.owner){
@@ -3420,7 +3426,7 @@ function renderGantt(){
           const bgCol=colors[h];
           mk('circle',{cx:ax,cy:ay,r:ar,fill:bgCol},bG);
           const initials=(t.owner||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-          const itx=mk('text',{x:ax,y:ay+3.5,'text-anchor':'middle',fill:'#fff','font-size':'7','font-weight':'700','font-family':ff,'pointer-events':'none'},bG);
+          const itx=mk('text',{x:ax,y:ay+3.5,'text-anchor':'middle',fill:'#fff','font-size':fs(7),'font-weight':'700','font-family':ff,'pointer-events':'none'},bG);
           itx.textContent=initials;
         }
         mk('circle',{cx:ax,cy:ay,r:ar,fill:'none',stroke:isLight?'rgba(0,0,0,.15)':'rgba(255,255,255,.25)','stroke-width':'1'},bG);
@@ -3435,7 +3441,7 @@ function renderGantt(){
       // End date callout (mm/dd) shown to the right of bar
       const _ep=t.end.slice(0,10).split('-');const _ed=new Date(+_ep[0],+_ep[1]-1,+_ep[2]);
       const _elbl=(_ed.getMonth()+1)+'/'+String(_ed.getDate()).padStart(2,'0');
-      tx(_elbl,bx+bw+4,barY+TASK_H/2+3.5,{fill:barSt,'font-size':'8','font-family':ff,opacity:'0.8','pointer-events':'none'},bG);
+      tx(_elbl,bx+bw+4,barY+TASK_H/2+3.5,{fill:barSt,'font-size':fs(8),'font-family':ff,opacity:'0.8','pointer-events':'none'},bG);
     }
   });
 
@@ -3462,7 +3468,7 @@ function renderGantt(){
         // Delete button — hidden until hovered (created first so hitPath can reference it)
         const xBg=mk('g',{'data-dep-from':depId,'data-dep-to':t.id,style:'cursor:pointer;opacity:0;transition:opacity .12s'},dG);
         mk('rect',{x:mx-6,y:my-6,width:12,height:12,rx:6,fill:'#1a1d27',stroke:'#6b7280','stroke-width':1},xBg);
-        const xt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle',fill:'#f87171','font-size':'11','font-weight':'900','font-family':ff,style:'pointer-events:none'},xBg);xt.textContent='−';
+        const xt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle',fill:'#f87171','font-size':fs(11),'font-weight':'900','font-family':ff,style:'pointer-events:none'},xBg);xt.textContent='−';
         xBg.addEventListener('mouseenter',()=>xBg.style.opacity='1');
         xBg.addEventListener('mouseleave',()=>xBg.style.opacity='0');
         // Visible arrow
@@ -3504,7 +3510,7 @@ function renderGantt(){
     const cpG=mk('g',{'data-cp-task':t.id,'cursor':'crosshair'},cpLayer);
     cpG.setAttribute('opacity','0');
     mk('circle',{cx:cpX,cy:cpY,r:7,fill:'#22c55e',stroke:'#fff','stroke-width':1.5},cpG);
-    mk('text',{x:cpX,y:cpY+4,'text-anchor':'middle',fill:'#fff','font-size':'9','font-weight':'700','font-family':ff,'pointer-events':'none'},cpG).textContent='→';
+    mk('text',{x:cpX,y:cpY+4,'text-anchor':'middle',fill:'#fff','font-size':fs(9),'font-weight':'700','font-family':ff,'pointer-events':'none'},cpG).textContent='→';
     // Purple ● at left edge — also on top
     const depTgt=mk('circle',{cx:bx2,cy:cpY,r:5,fill:'#6366f1',stroke:'#fff','stroke-width':1.5,'data-dep-target':t.id,'cursor':'cell'},cpLayer);
     depTgt.setAttribute('opacity','0');
@@ -3520,11 +3526,11 @@ function renderGantt(){
   // Today + Release lines
   if(showToday){
     const tx2=dateToX(today,min)+pxPerDay/2;
-    if(tx2>0&&tx2<totalW){mk('line',{x1:tx2,y1:0,x2:tx2,y2:contentH,stroke:'#f59e0b','stroke-width':2,'stroke-dasharray':'5,3',opacity:.8});tx('TODAY',tx2+3,10,{fill:'#f59e0b','font-size':'9','font-weight':'700','font-family':ff});}
+    if(tx2>0&&tx2<totalW){mk('line',{x1:tx2,y1:0,x2:tx2,y2:contentH,stroke:'#f59e0b','stroke-width':2,'stroke-dasharray':'5,3',opacity:.8});tx('TODAY',tx2+3,10,{fill:'#f59e0b','font-size':fs(9),'font-weight':'700','font-family':ff});}
   }
   if(rel&&rel.releaseDate){
     const rx=dateToX(rel.releaseDate,min)+pxPerDay/2;
-    if(rx>0&&rx<totalW){mk('line',{x1:rx,y1:0,x2:rx,y2:contentH,stroke:'#22c55e','stroke-width':2,opacity:.7});tx('✂️ CUT',rx+3,22,{fill:'#22c55e','font-size':'9','font-weight':'700','font-family':ff});}
+    if(rx>0&&rx<totalW){mk('line',{x1:rx,y1:0,x2:rx,y2:contentH,stroke:'#22c55e','stroke-width':2,opacity:.7});tx('✂️ CUT',rx+3,22,{fill:'#22c55e','font-size':fs(9),'font-weight':'700','font-family':ff});}
   }
 
   document.getElementById('gantt-wrap-inner').style.cssText='position:relative;width:'+totalW+'px;height:'+contentH+'px';
